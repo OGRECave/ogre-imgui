@@ -24,22 +24,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
-## Dependencies
+## Dependencies ##
 
 * Ogre 2.0
 * IMGUI
 * OIS
 
-## Usage
+## Usage ##
 
-### Compiling
+### Compiling ###
 
 Simply copy the files somewhere in your project or in your imgui project. include paths needed are:
 * OgreMain/include
 * OIS
 * Boost if you are using it as Ogre thread provider
 
-### Use
+### Integration ###
 
 Create and init the ImguiManager after your Ogre init:
 
@@ -54,7 +54,7 @@ And voilà !
 
 You can then use imgui just like you want.
 
-## TODO
+## TODO ##
 
 * Add proper comments
 * Test it with D3D 11 render system.
