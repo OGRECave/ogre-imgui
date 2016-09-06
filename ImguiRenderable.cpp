@@ -62,10 +62,10 @@ namespace Ogre
         mRenderOp.vertexData = OGRE_NEW VertexData();
         mRenderOp.indexData  = OGRE_NEW IndexData();
 
-        mRenderOp.vertexData->vertexCount   = 3;
+        mRenderOp.vertexData->vertexCount   = 0;
         mRenderOp.vertexData->vertexStart   = 0;
 
-        mRenderOp.indexData->indexCount = 3;
+        mRenderOp.indexData->indexCount = 0;
         mRenderOp.indexData->indexStart = 0;
         mRenderOp.operationType             = RenderOperation::OT_TRIANGLE_LIST;
         mRenderOp.useIndexes                                    = true; 
@@ -73,7 +73,7 @@ namespace Ogre
 
         VertexDeclaration* decl     = mRenderOp.vertexData->vertexDeclaration;
         
-
+        // vertex declaration
         size_t offset = 0;
         decl->addElement(0,offset,Ogre::VET_FLOAT2,Ogre::VES_POSITION);
         offset += VertexElement::getTypeSize( VET_FLOAT2 );
