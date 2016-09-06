@@ -1,8 +1,8 @@
-# Ogre Binding for IMGUI
+# Ogre Binding for IMGUI #
 
-## Warning: this has been only tested with Ogre 2.0 and Open GL3+ render system, but it should work with 1.x and 2.1 too.
+## Warning: this has been only tested with Ogre 2.0 and Open GL3+ render system, but it should work with 1.x and 2.1 too. ##
 
-## License:
+## License: ##
 
 tl;dr : MIT license
 
