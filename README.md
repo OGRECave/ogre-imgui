@@ -35,6 +35,7 @@ THE SOFTWARE.
 ### Compiling ###
 
 Simply copy the files somewhere in your project or in your imgui project. include paths needed are:
+
 * OgreMain/include
 * OIS
 * Boost if you are using it as Ogre thread provider
