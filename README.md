@@ -42,14 +42,14 @@ Simply copy the files somewhere in your project or in your imgui project. includ
 ### Integration ###
 
 Create and init the ImguiManager after your Ogre init:
-
+```
 ImguiManager::createSingleton();
 ImguiManager::getSingleton().init(mSceneMgr,mOISKeyboardInput,mOISMouseInput);
-
+```
 Then in your render loop:
-
+```
 ImguiManager::getSingleton().newFrame(getDeltaTime(), Ogre::Rect(0,0,_getRenderWindow()->getWidth(),_getRenderWindow()->getHeight()));
-
+```
 And voilà !
 
 You can then use imgui just like you want.
