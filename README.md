@@ -1,5 +1,7 @@
 # Ogre Binding for IMGUI #
 
+This is a raw Ogre binding for Imgui. No project/cmake file, no demo, just two source files, because If you're familiar with Ogre, integration should be pretty straightforward.
+
 ## Warning: this has been only tested with Ogre 2.0 and Open GL3+ render system, but it should work with 1.x and 2.1 too. ##
 
 ## License: ##
@@ -54,6 +56,17 @@ ImguiManager::getSingleton().newFrame(getDeltaTime(), Ogre::Rect(0,0,_getRenderW
 And voilà !
 
 You can then use imgui just like you want.
+
+#### Note ####
+
+You'll also need to transfer input events from your OIS Input listener to the Imgui manager.
+For example:
+```
+bool MyInputManager::mouseMoved( const OIS::MouseEvent &arg )
+{
+    Ogre::ImguiManager::getSingleton().mouseMoved(arg);
+}
+```
 
 ## TODO ##
 
