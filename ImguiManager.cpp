@@ -14,6 +14,7 @@
 #include <OgreViewport.h>
 #include <OgreHighLevelGpuProgramManager.h>
 #include <OgreHighLevelGpuProgram.h>
+#include <OgreUnifiedHighLevelGpuProgram.h>
 #include <OgreRoot.h>
 #include <OgreTechnique.h>
 #include <OgreViewport.h>
@@ -205,7 +206,7 @@ void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation
 void ImguiManager::createMaterial()
 {
     
-    static const char* vertexShaderD3D11 =
+    static const char* vertexShaderSrcD3D11 =
     {
     "cbuffer vertexBuffer : register(b0) \n"
     "{\n"
@@ -235,7 +236,7 @@ void ImguiManager::createMaterial()
     
 
  
-    static const char* pixelShaderD3D11 =
+    static const char* pixelShaderSrcD3D11 =
     {
     "struct PS_INPUT\n"
     "{\n"
@@ -253,7 +254,7 @@ void ImguiManager::createMaterial()
     "}"
     };
 
-    static const char* vertexShaderGLSL =
+    static const char* vertexShaderSrcGLSL =
     {
     "#version 330\n"
     "uniform mat4 ProjectionMatrix; \n"
@@ -272,7 +273,7 @@ void ImguiManager::createMaterial()
     
 
  
-    static const char* pixelShaderGLSL =
+    static const char* pixelShaderSrcGLSL =
     {
     "#version 330\n"
     "in vec2 Texcoord;\n"
@@ -288,48 +289,70 @@ void ImguiManager::createMaterial()
         //create the default shadows material
     Ogre::HighLevelGpuProgramManager& mgr = Ogre::HighLevelGpuProgramManager::getSingleton();
 
-    Ogre::HighLevelGpuProgramPtr vertexShader = mgr.getByName("imgui/VP");
-    Ogre::HighLevelGpuProgramPtr pixelShader = mgr.getByName("imgui/FP");
+    Ogre::HighLevelGpuProgramPtr vertexShaderUnified = mgr.getByName("imgui/VP");
+    Ogre::HighLevelGpuProgramPtr pixelShaderUnified = mgr.getByName("imgui/FP");
     
-    if (Ogre::Root::getSingleton().getRenderSystem()->getName() == "Direct3D11 Rendering Subsystem")
+    Ogre::HighLevelGpuProgramPtr vertexShaderD3D11 = mgr.getByName("imgui/VP/D3D11");
+    Ogre::HighLevelGpuProgramPtr pixelShaderD3d11 = mgr.getByName("imgui/FP/D3D11");
+
+    Ogre::HighLevelGpuProgramPtr vertexShaderGL3 = mgr.getByName("imgui/VP/GL330");
+    Ogre::HighLevelGpuProgramPtr pixelShaderGL3 = mgr.getByName("imgui/FP/GL330");
+    
+    if(vertexShaderUnified.isNull())
     {
-        if (vertexShader.isNull())
+        vertexShaderUnified = mgr.createProgram("imgui/VP",Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,"unified",GPT_VERTEX_PROGRAM);
+    }
+    if(pixelShaderUnified.isNull())
         {
-            vertexShader = mgr.createProgram("imgui/VP", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+        pixelShaderUnified = mgr.createProgram("imgui/FP",Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,"unified",GPT_FRAGMENT_PROGRAM);
+    }
+
+    UnifiedHighLevelGpuProgram* vertexShaderPtr = vertexShaderUnified.staticCast<UnifiedHighLevelGpuProgram>().get();
+    UnifiedHighLevelGpuProgram* pixelShaderPtr = pixelShaderUnified.staticCast<UnifiedHighLevelGpuProgram>().get();
+
+    if (vertexShaderD3D11.isNull())
+    {
+        vertexShaderD3D11 = mgr.createProgram("imgui/VP/D3D11", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
                 "hlsl", Ogre::GPT_VERTEX_PROGRAM);
-            vertexShader->setParameter("target", "vs_4_0");
-            vertexShader->setParameter("entry_point", "main");
-            vertexShader->setSource(vertexShaderD3D11);
-            vertexShader->load();
+        vertexShaderD3D11->setParameter("target", "vs_4_0");
+        vertexShaderD3D11->setParameter("entry_point", "main");
+        vertexShaderD3D11->setSource(vertexShaderSrcD3D11);
+        vertexShaderD3D11->load();
+
+        vertexShaderPtr->addDelegateProgram(vertexShaderD3D11->getName());
         }
-        if (pixelShader.isNull())
+    if (pixelShaderD3d11.isNull())
         {
-            pixelShader = mgr.createProgram("imgui/FP", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+        pixelShaderD3d11 = mgr.createProgram("imgui/FP/D3D11", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
                 "hlsl", Ogre::GPT_FRAGMENT_PROGRAM);
-            pixelShader->setParameter("target", "ps_4_0");
-            pixelShader->setParameter("entry_point", "main");
-            pixelShader->setSource(pixelShaderD3D11);
-            pixelShader->load();
+        pixelShaderD3d11->setParameter("target", "ps_4_0");
+        pixelShaderD3d11->setParameter("entry_point", "main");
+        pixelShaderD3d11->setSource(pixelShaderSrcD3D11);
+        pixelShaderD3d11->load();
+
+        pixelShaderPtr->addDelegateProgram(pixelShaderD3d11->getName());
         }
-    }
-    else //OpenGl
+    
+
+    if (vertexShaderGL3.isNull())
     {
-        if (vertexShader.isNull())
-        {
-            vertexShader = mgr.createProgram("imgui/VP", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+        vertexShaderGL3 = mgr.createProgram("imgui/VP/GL330", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
                 "glsl", Ogre::GPT_VERTEX_PROGRAM);
-            vertexShader->setSource(vertexShaderGLSL);
-            vertexShader->load();
-                
+        vertexShaderGL3->setSource(vertexShaderSrcGLSL);
+        vertexShaderGL3->load();
+        vertexShaderPtr->addDelegateProgram(vertexShaderGL3->getName());
         }
-        if (pixelShader.isNull())
+    if (pixelShaderGL3.isNull())
         {
-            pixelShader = mgr.createProgram("imgui/FP", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+        pixelShaderGL3 = mgr.createProgram("imgui/FP/GL330", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
                 "glsl", Ogre::GPT_FRAGMENT_PROGRAM);
-            pixelShader->setSource(pixelShaderGLSL);
-            pixelShader->load();
+        pixelShaderGL3->setSource(pixelShaderSrcGLSL);
+        pixelShaderGL3->load();
+        pixelShaderGL3->setParameter("sampler0","int 0");
+
+        pixelShaderPtr->addDelegateProgram(pixelShaderGL3->getName());
         }
-    }
+   
     Ogre::MaterialPtr imguiMaterial = Ogre::MaterialManager::getSingleton().create("imgui/material", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
     mPass = imguiMaterial->getTechnique(0)->getPass(0);
     mPass->setFragmentProgram("imgui/FP");
@@ -342,7 +365,7 @@ void ImguiManager::createMaterial()
     mPass->setSeparateSceneBlending(Ogre::SBF_SOURCE_ALPHA,Ogre::SBF_ONE_MINUS_SOURCE_ALPHA,Ogre::SBF_ONE_MINUS_SOURCE_ALPHA,Ogre::SBF_ZERO);
         
 
-    mPass->getFragmentProgramParameters()->setNamedConstant("sampler0",0);
+    //mPass->getFragmentProgramParameters()->setNamedConstant("sampler0",0);
     mPass->createTextureUnitState()->setTextureName("ImguiFontTex");
 }
 
