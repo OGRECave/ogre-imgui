@@ -71,5 +71,6 @@ bool MyInputManager::mouseMoved( const OIS::MouseEvent &arg )
 ## TODO ##
 
 * Add proper comments
-* Test it with D3D 11 render system.
 * Test it with other versions of Ogre
+* Add support for D3D9 render system
+* Add support for GL render system
