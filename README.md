@@ -2,7 +2,7 @@
 
 This is a raw Ogre binding for Imgui. No project/cmake file, no demo, just four source files, because If you're familiar with Ogre, integration should be pretty straightforward.
 
-## Warning: this has been only tested with Ogre 2.0 and Open GL3+ render system, but it should work with 1.x and 2.1 too. ##
+## Warning: this has been only tested with Ogre 2.0 and Open GL3+ & D3D11 render systems, but it should work with 1.x and 2.1 too. ##
 
 ## License: ##
 
