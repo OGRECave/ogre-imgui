@@ -2,7 +2,6 @@
 
 This is a raw Ogre binding for Imgui. No project/cmake file, no demo, just four source files, because If you're familiar with Ogre, integration should be pretty straightforward.
 
-## Warning: this has been only tested with Ogre 2.0 and Open GL3+ render system, but it should work with 1.x and 2.1 too. ##
 
 ## License: ##
 
@@ -28,9 +27,18 @@ THE SOFTWARE.
 
 ## Dependencies ##
 
-* Ogre 2.0
+* Ogre
 * IMGUI
 * OIS
+
+## Compatibility ##
+
+This binding is compatible with both Ogre 1.x and 2.0.
+Render systems supported are:
+
+* D3D9
+* D3D11
+* GL3+
 
 ## Usage ##
 
@@ -71,5 +79,3 @@ bool MyInputManager::mouseMoved( const OIS::MouseEvent &arg )
 ## TODO ##
 
 * Add proper comments
-* Test it with D3D 11 render system.
-* Test it with other versions of Ogre

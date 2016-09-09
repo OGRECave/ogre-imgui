@@ -8,7 +8,6 @@
 #include <OgreSubMesh.h>
 #include <OgreTexture.h>
 #include <OgreTextureManager.h>
-#include <OgrePixelBox.h>
 #include <OgreString.h>
 #include <OgreStringConverter.h>
 #include <OgreViewport.h>
@@ -52,7 +51,7 @@ ImguiManager::ImguiManager()
 ,mKeyInput(0)
 ,mMouseInput(0)
 {
-    createMaterial();
+
 }
 ImguiManager::~ImguiManager()
 {
@@ -253,10 +252,51 @@ void ImguiManager::createMaterial()
     "return out_col; \n"
     "}"
     };
+	static const char* vertexShaderSrcD3D9 =
+    {
+    "uniform float4x4 ProjectionMatrix; \n"
+    "struct VS_INPUT\n"
+    "{\n"
+    "float2 pos : POSITION;\n"
+    "float4 col : COLOR0;\n"
+    "float2 uv  : TEXCOORD0;\n"
+    "};\n"
+    "struct PS_INPUT\n"
+    "{\n"
+    "float4 pos : POSITION;\n"
+    "float4 col : COLOR0;\n"
+    "float2 uv  : TEXCOORD0;\n"
+    "};\n"
+    "PS_INPUT main(VS_INPUT input)\n"
+    "{\n"
+    "PS_INPUT output;\n"
+    "output.pos = mul( ProjectionMatrix, float4(input.pos.xy, 0.f, 1.f));\n"
+    "output.col = input.col;\n"
+    "output.uv  = input.uv;\n"
+    "return output;\n"
+    "}"
+    };
+   
+    static const char* pixelShaderSrcSrcD3D9 =
+     {
+    "struct PS_INPUT\n"
+    "{\n"
+    "float4 pos : SV_POSITION;\n"
+    "float4 col : COLOR0;\n"
+    "float2 uv  : TEXCOORD0;\n"
+    "};\n"
+    "sampler2D sampler0;\n"
+    "\n"
+    "float4 main(PS_INPUT input) : SV_Target\n"
+    "{\n"
+    "float4 out_col = input.col.bgra * tex2D(sampler0, input.uv); \n"
+    "return out_col; \n"
+    "}"
+    };
 
     static const char* vertexShaderSrcGLSL =
     {
-    "#version 330\n"
+    "#version 150\n"
     "uniform mat4 ProjectionMatrix; \n"
     "in vec2 vertex;\n"
     "in vec2 uv0;\n"
@@ -271,11 +311,9 @@ void ImguiManager::createMaterial()
     "}"
     };
     
-
- 
     static const char* pixelShaderSrcGLSL =
     {
-    "#version 330\n"
+    "#version 150\n"
     "in vec2 Texcoord;\n"
     "in vec4 col;\n"
     "uniform sampler2D sampler0;\n"
@@ -293,10 +331,13 @@ void ImguiManager::createMaterial()
     Ogre::HighLevelGpuProgramPtr pixelShaderUnified = mgr.getByName("imgui/FP");
     
     Ogre::HighLevelGpuProgramPtr vertexShaderD3D11 = mgr.getByName("imgui/VP/D3D11");
-    Ogre::HighLevelGpuProgramPtr pixelShaderD3d11 = mgr.getByName("imgui/FP/D3D11");
+    Ogre::HighLevelGpuProgramPtr pixelShaderD3D11 = mgr.getByName("imgui/FP/D3D11");
 
-    Ogre::HighLevelGpuProgramPtr vertexShaderGL3 = mgr.getByName("imgui/VP/GL330");
-    Ogre::HighLevelGpuProgramPtr pixelShaderGL3 = mgr.getByName("imgui/FP/GL330");
+	Ogre::HighLevelGpuProgramPtr vertexShaderD3D9 = mgr.getByName("imgui/VP/D3D9");
+    Ogre::HighLevelGpuProgramPtr pixelShaderD3D9 = mgr.getByName("imgui/FP/D3D9");
+
+    Ogre::HighLevelGpuProgramPtr vertexShaderGL = mgr.getByName("imgui/VP/GL150");
+    Ogre::HighLevelGpuProgramPtr pixelShaderGL = mgr.getByName("imgui/FP/GL150");
     
     if(vertexShaderUnified.isNull())
     {
@@ -307,8 +348,8 @@ void ImguiManager::createMaterial()
         pixelShaderUnified = mgr.createProgram("imgui/FP",Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,"unified",GPT_FRAGMENT_PROGRAM);
     }
 
-    UnifiedHighLevelGpuProgram* vertexShaderPtr = vertexShaderUnified.staticCast<UnifiedHighLevelGpuProgram>().get();
-    UnifiedHighLevelGpuProgram* pixelShaderPtr = pixelShaderUnified.staticCast<UnifiedHighLevelGpuProgram>().get();
+    UnifiedHighLevelGpuProgram* vertexShaderPtr = static_cast<UnifiedHighLevelGpuProgram*>(vertexShaderUnified.get());
+    UnifiedHighLevelGpuProgram* pixelShaderPtr = static_cast<UnifiedHighLevelGpuProgram*>(pixelShaderUnified.get());
 
     if (vertexShaderD3D11.isNull())
     {
@@ -321,36 +362,57 @@ void ImguiManager::createMaterial()
 
         vertexShaderPtr->addDelegateProgram(vertexShaderD3D11->getName());
         }
-    if (pixelShaderD3d11.isNull())
+    if (pixelShaderD3D11.isNull())
         {
-        pixelShaderD3d11 = mgr.createProgram("imgui/FP/D3D11", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+        pixelShaderD3D11 = mgr.createProgram("imgui/FP/D3D11", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
                 "hlsl", Ogre::GPT_FRAGMENT_PROGRAM);
-        pixelShaderD3d11->setParameter("target", "ps_4_0");
-        pixelShaderD3d11->setParameter("entry_point", "main");
-        pixelShaderD3d11->setSource(pixelShaderSrcD3D11);
-        pixelShaderD3d11->load();
+        pixelShaderD3D11->setParameter("target", "ps_4_0");
+        pixelShaderD3D11->setParameter("entry_point", "main");
+        pixelShaderD3D11->setSource(pixelShaderSrcD3D11);
+        pixelShaderD3D11->load();
 
-        pixelShaderPtr->addDelegateProgram(pixelShaderD3d11->getName());
+        pixelShaderPtr->addDelegateProgram(pixelShaderD3D11->getName());
         }
-    
-
-    if (vertexShaderGL3.isNull())
+    if (vertexShaderD3D9.isNull())
     {
-        vertexShaderGL3 = mgr.createProgram("imgui/VP/GL330", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-                "glsl", Ogre::GPT_VERTEX_PROGRAM);
-        vertexShaderGL3->setSource(vertexShaderSrcGLSL);
-        vertexShaderGL3->load();
-        vertexShaderPtr->addDelegateProgram(vertexShaderGL3->getName());
-        }
-    if (pixelShaderGL3.isNull())
-        {
-        pixelShaderGL3 = mgr.createProgram("imgui/FP/GL330", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-                "glsl", Ogre::GPT_FRAGMENT_PROGRAM);
-        pixelShaderGL3->setSource(pixelShaderSrcGLSL);
-        pixelShaderGL3->load();
-        pixelShaderGL3->setParameter("sampler0","int 0");
+        vertexShaderD3D9 = mgr.createProgram("imgui/VP/D3D9", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+            "hlsl", Ogre::GPT_VERTEX_PROGRAM);
+        vertexShaderD3D9->setParameter("target", "vs_2_0");
+        vertexShaderD3D9->setParameter("entry_point", "main");
+        vertexShaderD3D9->setSource(vertexShaderSrcD3D9);
+        vertexShaderD3D9->load();
+    
+        vertexShaderPtr->addDelegateProgram(vertexShaderD3D9->getName());
+    }
+    if (pixelShaderD3D9.isNull())
+    {
+        pixelShaderD3D9 = mgr.createProgram("imgui/FP/D3D9", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+            "hlsl", Ogre::GPT_FRAGMENT_PROGRAM);
+        pixelShaderD3D9->setParameter("target", "ps_2_0");
+        pixelShaderD3D9->setParameter("entry_point", "main");
+        pixelShaderD3D9->setSource(pixelShaderSrcSrcD3D9);
+        pixelShaderD3D9->load();
+    
+        pixelShaderPtr->addDelegateProgram(pixelShaderD3D9->getName());
+    }
 
-        pixelShaderPtr->addDelegateProgram(pixelShaderGL3->getName());
+    if (vertexShaderGL.isNull())
+    {
+        vertexShaderGL = mgr.createProgram("imgui/VP/GL150", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+                "glsl", Ogre::GPT_VERTEX_PROGRAM);
+        vertexShaderGL->setSource(vertexShaderSrcGLSL);
+        vertexShaderGL->load();
+        vertexShaderPtr->addDelegateProgram(vertexShaderGL->getName());
+        }
+    if (pixelShaderGL.isNull())
+        {
+        pixelShaderGL = mgr.createProgram("imgui/FP/GL150", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+                "glsl", Ogre::GPT_FRAGMENT_PROGRAM);
+        pixelShaderGL->setSource(pixelShaderSrcGLSL);
+        pixelShaderGL->load();
+        pixelShaderGL->setParameter("sampler0","int 0");
+
+        pixelShaderPtr->addDelegateProgram(pixelShaderGL->getName());
         }
    
     Ogre::MaterialPtr imguiMaterial = Ogre::MaterialManager::getSingleton().create("imgui/material", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);

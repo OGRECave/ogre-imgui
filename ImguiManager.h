@@ -7,6 +7,7 @@
 
 #include <OgreRenderQueueListener.h>
 #include <OgreSingleton.h>
+#include <OgreTexture.h>
 
 #include "ImguiRenderable.h"
 
@@ -79,8 +80,8 @@ namespace Ogre
 
         std::list<ImGUIRenderable*> mRenderables;
 
-        Ogre::SceneManager*         mSceneMgr;
-        Ogre::Pass*                 mPass;
+        SceneManager*				mSceneMgr;
+        Pass*						mPass;
         int                         mLastRenderedFrame;
 
         TexturePtr                  mFontTex;

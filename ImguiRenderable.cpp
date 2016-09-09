@@ -103,6 +103,11 @@ namespace Ogre
         // Won't load twice anyway
         mMaterial->load();
     }
+	//-----------------------------------------------------------------------------------
+    void ImGUIRenderable::setMaterial(const MaterialPtr & material)
+    {
+        mMaterial = material;
+    }
     //-----------------------------------------------------------------------------------
     const MaterialPtr& ImGUIRenderable::getMaterial(void) const
     {

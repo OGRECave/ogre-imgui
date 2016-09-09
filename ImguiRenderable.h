@@ -27,6 +27,7 @@ namespace Ogre
         Real getSquaredViewDepth(const Camera* cam) const   { (void)cam; return 0; }
 
         void setMaterial( const String& matName );
+		virtual void setMaterial(const MaterialPtr & material);
         virtual const MaterialPtr& getMaterial(void) const;
         virtual void getWorldTransforms( Matrix4* xform ) const;
         virtual void getRenderOperation( RenderOperation& op );
