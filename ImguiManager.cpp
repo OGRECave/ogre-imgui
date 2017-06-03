@@ -302,12 +302,12 @@ void ImguiManager::createMaterial()
     "in vec2 uv0;\n"
     "in vec4 colour;\n"
     "out vec2 Texcoord;\n"
-    "out vec4 ocol;\n"
+    "out vec4 col;\n"
     "void main()\n"
     "{\n"
     "gl_Position = ProjectionMatrix* vec4(vertex.xy, 0.f, 1.f);\n"
     "Texcoord  = uv0;\n"
-    "ocol = colour;\n"
+    "col = colour;\n"
     "}"
     };
     
