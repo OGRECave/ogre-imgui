@@ -173,32 +173,43 @@ void ImguiManager::updateVertexData()
 //-----------------------------------------------------------------------------------
 void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation,bool& repeatThisInvocation)
 {
-    if(queueGroupId == Ogre::RENDER_QUEUE_OVERLAY && invocation !="SHADOWS")
+    if((queueGroupId != Ogre::RENDER_QUEUE_OVERLAY) || (invocation == "SHADOWS"))
     {
-        
-        Ogre::Viewport* vp = Ogre::Root::getSingletonPtr()->getRenderSystem()->_getViewport();
-
-        if(vp != NULL && vp->getTarget()->isPrimary())
-        {
-            //if (vp->getOverlaysEnabled())
-            {
-                if(mFrameEnded) return;
-                mFrameEnded=true;
-                ImGui::Render();
-                updateVertexData();
-                ImGuiIO& io = ImGui::GetIO();
-                Ogre::Matrix4 projMatrix(2.0f/io.DisplaySize.x, 0.0f,                   0.0f,-1.0f,
-                                 0.0f,                 -2.0f/io.DisplaySize.y,  0.0f, 1.0f,
-                                 0.0f,                  0.0f,                  -1.0f, 0.0f,
-                                 0.0f,                  0.0f,                   0.0f, 1.0f);
-
-                mPass->getVertexProgramParameters()->setNamedConstant("ProjectionMatrix",projMatrix);
-                for(std::list<ImGUIRenderable*>::iterator it = mRenderables.begin();it!=mRenderables.end();++it)
-                {
-                    mSceneMgr->_injectRenderWithPass(mPass,(*it),0,false,false);
-                }
-            }
-        }
+        return;
+    }
+    Ogre::RenderSystem* renderSys = Ogre::Root::getSingletonPtr()->getRenderSystem();
+    Ogre::Viewport* vp = renderSys->_getViewport();
+    
+    if ((vp == nullptr) || (!vp->getTarget()->isPrimary()) || mFrameEnded)
+    {
+        return;
+    }
+    
+    mFrameEnded = true;
+    ImGui::Render();
+    this->updateVertexData();
+    ImGuiIO& io = ImGui::GetIO();
+    
+    // Construct projection matrix, taking texel offset corrections in account (important for DirectX9)
+    // See also:
+    //     - OGRE-API specific hint: http://www.ogre3d.org/forums/viewtopic.php?f=5&p=536881#p536881
+    //     - IMGUI Dx9 demo solution: https://github.com/ocornut/imgui/blob/master/examples/directx9_example/imgui_impl_dx9.cpp#L127-L138
+    const float texelOffsetX = renderSys->getHorizontalTexelOffset();
+    const float texelOffsetY = renderSys->getVerticalTexelOffset();
+    const float L = texelOffsetX;
+    const float R = io.DisplaySize.x + texelOffsetX;
+    const float T = texelOffsetY;
+    const float B = io.DisplaySize.y + texelOffsetY;
+    
+    Ogre::Matrix4 projMatrix(       2.0f/(R-L),    0.0f,         0.0f,       (L+R)/(L-R),
+                                    0.0f,         -2.0f/(B-T),   0.0f,       (T+B)/(B-T),
+                                    0.0f,          0.0f,        -1.0f,       0.0f,
+                                    0.0f,          0.0f,         0.0f,       1.0f);
+    
+    mPass->getVertexProgramParameters()->setNamedConstant("ProjectionMatrix",projMatrix);
+    for(std::list<ImGUIRenderable*>::iterator it = mRenderables.begin();it!=mRenderables.end();++it)
+    {
+        mSceneMgr->_injectRenderWithPass(mPass,(*it),0,false,false);
     }
 }
 //-----------------------------------------------------------------------------------
