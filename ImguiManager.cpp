@@ -437,9 +437,9 @@ void ImguiManager::createMaterial()
     mPass->setSeparateSceneBlendingOperation(Ogre::SBO_ADD,Ogre::SBO_ADD);
     mPass->setSeparateSceneBlending(Ogre::SBF_SOURCE_ALPHA,Ogre::SBF_ONE_MINUS_SOURCE_ALPHA,Ogre::SBF_ONE_MINUS_SOURCE_ALPHA,Ogre::SBF_ZERO);
         
-
-    //mPass->getFragmentProgramParameters()->setNamedConstant("sampler0",0);
-    mPass->createTextureUnitState()->setTextureName("ImguiFontTex");
+    Ogre::TextureUnitState* texUnit =  mPass->createTextureUnitState();
+    texUnit->setTexture(mFontTex);
+    texUnit->setTextureFiltering(Ogre::TFO_NONE);
 }
 
 void ImguiManager::createFontTexture()
