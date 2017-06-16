@@ -103,6 +103,8 @@ bool ImguiManager::mouseMoved( const OIS::MouseEvent &arg )
     io.MousePos.x = arg.state.X.abs;
     io.MousePos.y = arg.state.Y.abs;
 
+    io.MouseWheel = Ogre::Math::Sign(arg.state.Z.rel);
+
     return true;
 }
 bool ImguiManager::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
