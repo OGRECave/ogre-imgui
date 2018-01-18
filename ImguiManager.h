@@ -38,8 +38,6 @@ namespace Ogre
 		virtual bool keyPressed( const OIS::KeyEvent &arg );
 		virtual bool keyReleased( const OIS::KeyEvent &arg );
 
-        void updateVertexData();
-
         /** Override standard Singleton retrieval.
         @remarks
         Why do we do this? Well, it's because the Singleton
@@ -77,8 +75,6 @@ namespace Ogre
 
         void createFontTexture();
         void createMaterial();
-
-        std::list<ImGUIRenderable*> mRenderables;
 
         SceneManager*				mSceneMgr;
         Pass*						mPass;

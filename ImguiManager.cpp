@@ -55,11 +55,6 @@ ImguiManager::ImguiManager()
 }
 ImguiManager::~ImguiManager()
 {
-    while(mRenderables.size()>0)
-    {
-        delete mRenderables.back();
-        mRenderables.pop_back();
-    }
     mSceneMgr->removeRenderQueueListener(this);
 }
 void ImguiManager::init(Ogre::SceneManager * mgr,OIS::Keyboard* keyInput, OIS::Mouse* mouseInput)
@@ -145,33 +140,6 @@ bool ImguiManager::keyReleased( const OIS::KeyEvent &arg )
     io.KeysDown[arg.key] = false;
     return true;
 }
-void ImguiManager::updateVertexData()
-{
-    int currentFrame = ImGui::GetFrameCount();
-    if(currentFrame == mLastRenderedFrame)
-    {
-        return ;
-    }
-    mLastRenderedFrame=currentFrame;
-
-
-    ImDrawData* draw_data = ImGui::GetDrawData();
-    while(mRenderables.size()<draw_data->CmdListsCount)
-    {
-        mRenderables.push_back(new Ogre::ImGUIRenderable());
-    }
-    while(mRenderables.size()>draw_data->CmdListsCount)
-    {
-        delete mRenderables.back();
-        mRenderables.pop_back();
-    }
-    unsigned int index=0;
-    for(std::list<ImGUIRenderable*>::iterator it = mRenderables.begin();it!=mRenderables.end();++it,++index)
-    {
-        (*it)->updateVertexData(draw_data,index);
-    }
-
-}
 //-----------------------------------------------------------------------------------
 void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation,bool& repeatThisInvocation)
 {
@@ -188,8 +156,6 @@ void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation
     }
     
     mFrameEnded = true;
-    ImGui::Render();
-    this->updateVertexData();
     ImGuiIO& io = ImGui::GetIO();
     
     // Construct projection matrix, taking texel offset corrections in account (important for DirectX9)
@@ -208,11 +174,48 @@ void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation
                                     0.0f,          0.0f,        -1.0f,       0.0f,
                                     0.0f,          0.0f,         0.0f,       1.0f);
     
-    mPass->getVertexProgramParameters()->setNamedConstant("ProjectionMatrix",projMatrix);
-    for(std::list<ImGUIRenderable*>::iterator it = mRenderables.begin();it!=mRenderables.end();++it)
+    mPass->getVertexProgramParameters()->setNamedConstant("ProjectionMatrix", projMatrix);
+
+    // Instruct ImGui to Render() and process the resulting CmdList-s
+    /// Adopted from https://bitbucket.org/ChaosCreator/imgui-ogre2.1-binding
+    /// ... Commentary on OGRE forums: http://www.ogre3d.org/forums/viewtopic.php?f=5&t=89081#p531059
+    ImGui::Render();
+    ImDrawData* draw_data = ImGui::GetDrawData();
+    int vpWidth  = vp->getActualWidth();
+    int vpHeight = vp->getActualHeight();
+    for (int i = 0; i < draw_data->CmdListsCount; ++i)
     {
-        mSceneMgr->_injectRenderWithPass(mPass,(*it),0,false,false);
+        const ImDrawList* draw_list = draw_data->CmdLists[i];
+        unsigned int startIdx = 0;
+
+        for (int j = 0; j < draw_list->CmdBuffer.Size; ++j)
+        {
+            // Create a renderable and fill it's buffers
+            ImGUIRenderable renderable;
+            const ImDrawCmd *drawCmd = &draw_list->CmdBuffer[j];
+            renderable.updateVertexData(draw_list->VtxBuffer.Data, &draw_list->IdxBuffer.Data[startIdx], draw_list->VtxBuffer.Size, drawCmd->ElemCount);
+
+            // Set scissoring
+            int scLeft   = static_cast<int>(drawCmd->ClipRect.x); // Obtain bounds
+            int scTop    = static_cast<int>(drawCmd->ClipRect.y);
+            int scRight  = static_cast<int>(drawCmd->ClipRect.z);
+            int scBottom = static_cast<int>(drawCmd->ClipRect.w);
+
+            scLeft   = scLeft   < 0 ? 0 : (scLeft  > vpWidth ? vpWidth : scLeft); // Clamp bounds to viewport dimensions
+            scRight  = scRight  < 0 ? 0 : (scRight > vpWidth ? vpWidth : scRight);
+            scTop    = scTop    < 0 ? 0 : (scTop    > vpHeight ? vpHeight : scTop);
+            scBottom = scBottom < 0 ? 0 : (scBottom > vpHeight ? vpHeight : scBottom);
+
+            renderSys->setScissorTest(true, scLeft, scTop, scRight, scBottom);
+
+            // Render!
+            mSceneMgr->_injectRenderWithPass(mPass, &renderable, 0, false, false);
+
+            // Update counts
+            startIdx += drawCmd->ElemCount;
+        }
     }
+    renderSys->setScissorTest(false);
 }
 //-----------------------------------------------------------------------------------
 void ImguiManager::createMaterial()

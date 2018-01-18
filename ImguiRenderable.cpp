@@ -89,6 +89,8 @@ namespace Ogre
     ImGUIRenderable::~ImGUIRenderable()
     {
         OGRE_DELETE mRenderOp.vertexData;
+        OGRE_DELETE mRenderOp.indexData;
+        mMaterial.setNull();
     }
     //-----------------------------------------------------------------------------------
     void ImGUIRenderable::setMaterial( const String& matName )
@@ -114,46 +116,39 @@ namespace Ogre
         return mMaterial;
     }
     //-----------------------------------------------------------------------------------
-    void ImGUIRenderable::updateVertexData(ImDrawData* draw_data,unsigned int cmdIndex)
+    void ImGUIRenderable::updateVertexData(const ImDrawVert* vtxBuf, const ImDrawIdx* idxBuf, unsigned int vtxCount, unsigned int idxCount)
     {
-        VertexBufferBinding* bind   = mRenderOp.vertexData->vertexBufferBinding;
+        Ogre::VertexBufferBinding* bind = mRenderOp.vertexData->vertexBufferBinding;
 
-        const ImDrawList* cmd_list = draw_data->CmdLists[cmdIndex];
-
-        if (bind->getBindings().empty() || mVertexBufferSize != cmd_list->VtxBuffer.size())
+        if (bind->getBindings().empty() || mVertexBufferSize != vtxCount)
         {
-            mVertexBufferSize = cmd_list->VtxBuffer.size();
+	        mVertexBufferSize = vtxCount;
 
-            bind->setBinding(0,Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(sizeof(ImDrawVert),mVertexBufferSize,Ogre::HardwareBuffer::HBU_WRITE_ONLY));
-
+	        bind->setBinding(0, Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(sizeof(ImDrawVert), mVertexBufferSize, Ogre::HardwareBuffer::HBU_WRITE_ONLY));
         }
-        if (mRenderOp.indexData->indexBuffer.isNull() || mIndexBufferSize != cmd_list->IdxBuffer.size())
+        if (mRenderOp.indexData->indexBuffer.isNull() || mIndexBufferSize != idxCount)
         {
-            mIndexBufferSize = cmd_list->IdxBuffer.size();
-
-            mRenderOp.indexData->indexBuffer=
-            Ogre::HardwareBufferManager::getSingleton().createIndexBuffer(HardwareIndexBuffer::IT_16BIT,mIndexBufferSize,Ogre::HardwareBuffer::HBU_WRITE_ONLY);
+	        mIndexBufferSize = idxCount;
             
+	        mRenderOp.indexData->indexBuffer =
+		        Ogre::HardwareBufferManager::getSingleton().createIndexBuffer(Ogre::HardwareIndexBuffer::IT_16BIT, mIndexBufferSize, Ogre::HardwareBuffer::HBU_WRITE_ONLY);
         }
       
         // Copy all vertices
-        ImDrawVert* vtx_dst = (ImDrawVert*)(bind->getBuffer(0)->lock(Ogre::HardwareBuffer::HBL_DISCARD));
-        ImDrawIdx* idx_dst = (ImDrawIdx*)(mRenderOp.indexData->indexBuffer->lock(Ogre::HardwareBuffer::HBL_DISCARD));
-
-       
-        memcpy(vtx_dst, &cmd_list->VtxBuffer[0], mVertexBufferSize * sizeof(ImDrawVert));
-        memcpy(idx_dst, &cmd_list->IdxBuffer[0], mIndexBufferSize * sizeof(ImDrawIdx));
+        ImDrawVert* vtxDst = (ImDrawVert*)(bind->getBuffer(0)->lock(Ogre::HardwareBuffer::HBL_DISCARD));
+        ImDrawIdx* idxDst = (ImDrawIdx*)(mRenderOp.indexData->indexBuffer->lock(Ogre::HardwareBuffer::HBL_DISCARD));
           
+        memcpy(vtxDst, vtxBuf, mVertexBufferSize * sizeof(ImDrawVert));
+        memcpy(idxDst, idxBuf, mIndexBufferSize * sizeof(ImDrawIdx));
          
         mRenderOp.vertexData->vertexStart = 0;
-        mRenderOp.vertexData->vertexCount =  cmd_list->VtxBuffer.size();
+        mRenderOp.vertexData->vertexCount = vtxCount;
         mRenderOp.indexData->indexStart = 0;
-        mRenderOp.indexData->indexCount =  cmd_list->IdxBuffer.size();
+        mRenderOp.indexData->indexCount = idxCount;
+
 
         bind->getBuffer(0)->unlock();
         mRenderOp.indexData->indexBuffer->unlock();
-
-     
     }
     //-----------------------------------------------------------------------------------
     void ImGUIRenderable::getWorldTransforms( Matrix4* xform ) const
