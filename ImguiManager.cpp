@@ -52,10 +52,11 @@ ImguiManager::ImguiManager()
 ,mKeyInput(0)
 ,mMouseInput(0)
 {
-
+    ImGui::CreateContext();
 }
 ImguiManager::~ImguiManager()
 {
+    ImGui::DestroyContext();
     mSceneMgr->removeRenderQueueListener(this);
 }
 void ImguiManager::init(Ogre::SceneManager * mgr,OIS::Keyboard* keyInput, OIS::Mouse* mouseInput)
