@@ -1,7 +1,6 @@
 # Ogre Binding for IMGUI #
 
-This is a raw Ogre binding for Imgui. No project/cmake file, no demo, just four source files, because If you're familiar with Ogre, integration should be pretty straightforward.
-
+This is a raw Ogre binding for Imgui.
 
 ## License: ##
 
@@ -29,7 +28,6 @@ THE SOFTWARE.
 
 * Ogre
 * IMGUI
-* OIS
 
 ## Compatibility ##
 
@@ -42,39 +40,12 @@ Render systems supported are:
 
 ## Usage ##
 
-### Compiling ###
-
-Simply copy the files somewhere in your project or in your imgui project. include paths needed are:
-
-* OgreMain/include
-* OIS
-* Boost if you are using it as Ogre thread provider
-
-### Integration ###
-
-Create and init the ImguiManager after your Ogre init:
-```
-ImguiManager::createSingleton();
-ImguiManager::getSingleton().init(mSceneMgr,mOISKeyboardInput,mOISMouseInput);
-```
-Then in your render loop:
-```
-ImguiManager::getSingleton().newFrame(getDeltaTime(), Ogre::Rect(0,0,_getRenderWindow()->getWidth(),_getRenderWindow()->getHeight()));
-```
-And voilà !
+* **Compiling**  
+  see [CMakeLists.txt](CMakeLists.txt)
+* **Integration**  
+  see [Example.cpp](Example.cpp)
 
 You can then use imgui just like you want.
-
-#### Note ####
-
-You'll also need to transfer input events from your OIS Input listener to the Imgui manager.
-For example:
-```
-bool MyInputManager::mouseMoved( const OIS::MouseEvent &arg )
-{
-    Ogre::ImguiManager::getSingleton().mouseMoved(arg);
-}
-```
 
 ## TODO ##
 
