@@ -215,11 +215,13 @@ void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation
                 if(!tex.isNull())
                 {
                     mTexUnit->setTexture(tex);
+                    mTexUnit->setTextureFiltering(Ogre::TFO_TRILINEAR);
                 }
             }
             else
             {
                 mTexUnit->setTexture(mFontTex);
+                mTexUnit->setTextureFiltering(Ogre::TFO_NONE);
             }
             renderSys->setScissorTest(true, scLeft, scTop, scRight, scBottom);
 
