@@ -47,10 +47,6 @@ ImguiManager& ImguiManager::getSingleton(void)
 ImguiManager::ImguiManager()
 :mSceneMgr(0)
 ,mLastRenderedFrame(-1)
-,OIS::MouseListener()
-,OIS::KeyListener()
-,mKeyInput(0)
-,mMouseInput(0)
 {
     ImGui::CreateContext();
 }
@@ -59,87 +55,126 @@ ImguiManager::~ImguiManager()
     ImGui::DestroyContext();
     mSceneMgr->removeRenderQueueListener(this);
 }
-void ImguiManager::init(Ogre::SceneManager * mgr,OIS::Keyboard* keyInput, OIS::Mouse* mouseInput)
+
+// SDL2 keycode to scancode
+static int kc2sc(int kc)
 {
+    return kc & ~(1 << 30);
+}
+
+void ImguiManager::init(Ogre::SceneManager * mgr)
+{
+    using namespace OgreBites;
+
     mSceneMgr  = mgr;
-    mMouseInput= mouseInput;
-    mKeyInput = keyInput;
 
     mSceneMgr->addRenderQueueListener(this);
     ImGuiIO& io = ImGui::GetIO();
 
-    io.KeyMap[ImGuiKey_Tab] = OIS::KC_TAB;                       // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array that we will update during the application lifetime.
-    io.KeyMap[ImGuiKey_LeftArrow] = OIS::KC_LEFT;
-    io.KeyMap[ImGuiKey_RightArrow] = OIS::KC_RIGHT;
-    io.KeyMap[ImGuiKey_UpArrow] = OIS::KC_UP;
-    io.KeyMap[ImGuiKey_DownArrow] = OIS::KC_DOWN;
-    io.KeyMap[ImGuiKey_PageUp] = OIS::KC_PGUP;
-    io.KeyMap[ImGuiKey_PageDown] = OIS::KC_PGDOWN;
-    io.KeyMap[ImGuiKey_Home] = OIS::KC_HOME;
-    io.KeyMap[ImGuiKey_End] = OIS::KC_END;
-    io.KeyMap[ImGuiKey_Delete] = OIS::KC_DELETE;
-    io.KeyMap[ImGuiKey_Backspace] = OIS::KC_BACK;
-    io.KeyMap[ImGuiKey_Enter] = OIS::KC_RETURN;
-    io.KeyMap[ImGuiKey_Escape] = OIS::KC_ESCAPE;
-    io.KeyMap[ImGuiKey_A] = OIS::KC_A;
-    io.KeyMap[ImGuiKey_C] = OIS::KC_C;
-    io.KeyMap[ImGuiKey_V] = OIS::KC_V;
-    io.KeyMap[ImGuiKey_X] = OIS::KC_X;
-    io.KeyMap[ImGuiKey_Y] = OIS::KC_Y;
-    io.KeyMap[ImGuiKey_Z] = OIS::KC_Z;
+    // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array that we will update during the application lifetime.
+    io.KeyMap[ImGuiKey_Tab] = '\t';
+    io.KeyMap[ImGuiKey_LeftArrow] = kc2sc(SDLK_LEFT);
+    io.KeyMap[ImGuiKey_RightArrow] = kc2sc(SDLK_RIGHT);
+    io.KeyMap[ImGuiKey_UpArrow] = kc2sc(SDLK_UP);
+    io.KeyMap[ImGuiKey_DownArrow] = kc2sc(SDLK_DOWN);
+    io.KeyMap[ImGuiKey_PageUp] = kc2sc(SDLK_PAGEUP);
+    io.KeyMap[ImGuiKey_PageDown] = kc2sc(SDLK_PAGEDOWN);
+    io.KeyMap[ImGuiKey_Home] = -1;
+    io.KeyMap[ImGuiKey_End] = -1;
+    io.KeyMap[ImGuiKey_Delete] = -1;
+    io.KeyMap[ImGuiKey_Backspace] = '\b';
+    io.KeyMap[ImGuiKey_Enter] = '\r';
+    io.KeyMap[ImGuiKey_Escape] = '\033';
+    io.KeyMap[ImGuiKey_Space] = ' ';
+    io.KeyMap[ImGuiKey_A] = 'a';
+    io.KeyMap[ImGuiKey_C] = 'c';
+    io.KeyMap[ImGuiKey_V] = 'v';
+    io.KeyMap[ImGuiKey_X] = 'x';
+    io.KeyMap[ImGuiKey_Y] = 'y';
+    io.KeyMap[ImGuiKey_Z] = 'z';
 
     createFontTexture();
     createMaterial();
 }
- //Inherhited from OIS::MouseListener
-bool ImguiManager::mouseMoved( const OIS::MouseEvent &arg )
+
+bool ImguiManager::mouseWheelRolled(const OgreBites::MouseWheelEvent& arg)
+{
+    ImGuiIO& io = ImGui::GetIO();
+    io.MouseWheel = Ogre::Math::Sign(arg.y);
+    return true;
+}
+
+bool ImguiManager::mouseMoved( const OgreBites::MouseMotionEvent &arg )
 {
 
     ImGuiIO& io = ImGui::GetIO();
 
-    io.MousePos.x = arg.state.X.abs;
-    io.MousePos.y = arg.state.Y.abs;
-
-    io.MouseWheel = Ogre::Math::Sign(arg.state.Z.rel);
+    io.MousePos.x = arg.x;
+    io.MousePos.y = arg.y;
 
     return true;
 }
-bool ImguiManager::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
+
+// map sdl2 mouse buttons to imgui
+static int sdl2imgui(int b)
+{
+    switch(b) {
+    case 2:
+        return 2;
+    case 3:
+        return 1;
+    default:
+        return b - 1;
+    }
+}
+
+bool ImguiManager::mousePressed( const OgreBites::MouseButtonEvent &arg)
 {
     ImGuiIO& io = ImGui::GetIO();
-    if(id<5)
+    int b = sdl2imgui(arg.button);
+    if(b<5)
     {
-        io.MouseDown[id] = true;
+        io.MouseDown[b] = true;
     }
     return true;
 }
-bool ImguiManager::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
+bool ImguiManager::mouseReleased( const OgreBites::MouseButtonEvent &arg)
 {
     ImGuiIO& io = ImGui::GetIO();
-    if(id<5)
+    int b = sdl2imgui(arg.button);
+    if(b<5)
     {
-        io.MouseDown[id] = false;
+        io.MouseDown[b] = false;
     }
     return true;
 }
-//Inherhited from OIS::KeyListener
-bool ImguiManager::keyPressed( const OIS::KeyEvent &arg )
+bool ImguiManager::keyPressed( const OgreBites::KeyboardEvent &arg )
 {
+    using namespace OgreBites;
+
     ImGuiIO& io = ImGui::GetIO();
-    io.KeysDown[arg.key] = true;
     
+    io.KeyCtrl = arg.keysym.mod & KMOD_CTRL;
+    io.KeyShift = arg.keysym.sym == SDLK_LSHIFT;
 
-    if(arg.text>0)
+    int key = kc2sc(arg.keysym.sym);
+
+    if(key > 0 && key < 512)
     {
-        io.AddInputCharacter((unsigned short)arg.text);
+        io.KeysDown[key] = true;
+        io.AddInputCharacter((unsigned short)arg.keysym.sym);
     }
 
     return true;
 }
-bool ImguiManager::keyReleased( const OIS::KeyEvent &arg )
+bool ImguiManager::keyReleased( const OgreBites::KeyboardEvent &arg )
 {
+    int key = kc2sc(arg.keysym.sym);
+    if(key < 0 || key >= 512)
+        return true;
+
     ImGuiIO& io = ImGui::GetIO();
-    io.KeysDown[arg.key] = false;
+    io.KeysDown[key] = false;
     return true;
 }
 //-----------------------------------------------------------------------------------
@@ -491,9 +526,7 @@ void ImguiManager::newFrame(float deltaTime,const Ogre::Rect & windowRect)
     io.DeltaTime = deltaTime;
 
      // Read keyboard modifiers inputs
-    io.KeyCtrl = mKeyInput->isKeyDown(OIS::KC_LCONTROL);
-    io.KeyShift = mKeyInput->isKeyDown(OIS::KC_LSHIFT);
-    io.KeyAlt = mKeyInput->isKeyDown(OIS::KC_LMENU);
+    io.KeyAlt = false;// mKeyInput->isKeyDown(OIS::KC_LMENU);
     io.KeySuper = false;
 
     // Setup display size (every frame to accommodate for window resizing)

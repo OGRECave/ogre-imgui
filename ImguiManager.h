@@ -2,12 +2,11 @@
 
 #include <imgui.h>
 #include <OgreCommon.h>
-#include <OISMouse.h>
-#include <OISKeyboard.h>
 
 #include <OgreRenderQueueListener.h>
 #include <OgreSingleton.h>
 #include <OgreTexture.h>
+#include <OgreInput.h>
 
 #include "ImguiRenderable.h"
 
@@ -16,7 +15,7 @@ namespace Ogre
     class SceneManager;
     class TextureUnitState;
 
-    class ImguiManager : public RenderQueueListener,public OIS::MouseListener,public OIS::KeyListener, public Singleton<ImguiManager>
+    class ImguiManager : public RenderQueueListener,public OgreBites::InputListener, public Singleton<ImguiManager>
     {
         public:
         static void createSingleton();
@@ -24,20 +23,19 @@ namespace Ogre
         ImguiManager();
         ~ImguiManager();
 
-        virtual void init(Ogre::SceneManager* mgr,OIS::Keyboard* keyInput, OIS::Mouse* mouseInput);
+        virtual void init(Ogre::SceneManager* mgr);
 
         virtual void newFrame(float deltaTime,const Ogre::Rect & windowRect);
 
         //inherited from RenderQueueListener
         virtual void renderQueueEnded(uint8 queueGroupId, const String& invocation,bool& repeatThisInvocation);
 
-        //Inherhited from OIS::MouseListener
-        virtual bool mouseMoved( const OIS::MouseEvent &arg );
-		virtual bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
-		virtual bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
-        //Inherhited from OIS::KeyListener
-		virtual bool keyPressed( const OIS::KeyEvent &arg );
-		virtual bool keyReleased( const OIS::KeyEvent &arg );
+        virtual bool mouseWheelRolled(const OgreBites::MouseWheelEvent& arg);
+        virtual bool mouseMoved( const OgreBites::MouseMotionEvent &arg );
+		virtual bool mousePressed( const OgreBites::MouseButtonEvent &arg);
+		virtual bool mouseReleased( const OgreBites::MouseButtonEvent &arg);
+		virtual bool keyPressed( const OgreBites::KeyboardEvent &arg );
+		virtual bool keyReleased( const OgreBites::KeyboardEvent &arg );
 
         /** Override standard Singleton retrieval.
         @remarks
@@ -85,7 +83,5 @@ namespace Ogre
         TexturePtr                  mFontTex;
 
         bool                        mFrameEnded;
-        OIS::Keyboard*              mKeyInput;
-        OIS::Mouse*                 mMouseInput;
     };
 }
