@@ -25,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -----------------------------------------------------------------------------
 */
-#include "OgreStableHeaders.h"
-
 #include <imgui.h>
 
 #include "ImguiRenderable.h"
@@ -90,13 +88,12 @@ namespace Ogre
     {
         OGRE_DELETE mRenderOp.vertexData;
         OGRE_DELETE mRenderOp.indexData;
-        mMaterial.setNull();
     }
     //-----------------------------------------------------------------------------------
     void ImGUIRenderable::setMaterial( const String& matName )
     {
         mMaterial = MaterialManager::getSingleton().getByName( matName );
-        if( mMaterial.isNull() )
+        if( !mMaterial )
         {
             OGRE_EXCEPT( Exception::ERR_ITEM_NOT_FOUND, "Could not find material " + matName,
                         "ImGUIRenderable::setMaterial" );
@@ -126,7 +123,7 @@ namespace Ogre
 
 	        bind->setBinding(0, Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(sizeof(ImDrawVert), mVertexBufferSize, Ogre::HardwareBuffer::HBU_WRITE_ONLY));
         }
-        if (mRenderOp.indexData->indexBuffer.isNull() || mIndexBufferSize != idxCount)
+        if (!mRenderOp.indexData->indexBuffer || mIndexBufferSize != idxCount)
         {
 	        mIndexBufferSize = idxCount;
             

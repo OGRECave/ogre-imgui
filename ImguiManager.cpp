@@ -212,8 +212,9 @@ void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation
             if(drawCmd->TextureId != 0 )
             {
                 Ogre::ResourceHandle handle = (Ogre::ResourceHandle)drawCmd->TextureId;
-                Ogre::TexturePtr tex = Ogre::TextureManager::getSingleton().getByHandle(handle).staticCast<Ogre::Texture>();
-                if(!tex.isNull())
+                Ogre::TexturePtr tex = Ogre::static_pointer_cast<Ogre::Texture>(
+                    Ogre::TextureManager::getSingleton().getByHandle(handle));
+                if (tex)
                 {
                     mTexUnit->setTexture(tex);
                     mTexUnit->setTextureFiltering(Ogre::TFO_TRILINEAR);
@@ -227,7 +228,7 @@ void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation
             renderSys->setScissorTest(true, scLeft, scTop, scRight, scBottom);
 
             // Render!
-            mSceneMgr->_injectRenderWithPass(mPass, &renderable, 0, false, false);
+            mSceneMgr->_injectRenderWithPass(mPass, &renderable, 0, false, NULL);
 
             // Update counts
             startIdx += drawCmd->ElemCount;
@@ -373,11 +374,11 @@ void ImguiManager::createMaterial()
     Ogre::HighLevelGpuProgramPtr vertexShaderGL = mgr.getByName("imgui/VP/GL150");
     Ogre::HighLevelGpuProgramPtr pixelShaderGL = mgr.getByName("imgui/FP/GL150");
     
-    if(vertexShaderUnified.isNull())
+    if(!vertexShaderUnified)
     {
         vertexShaderUnified = mgr.createProgram("imgui/VP",Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,"unified",GPT_VERTEX_PROGRAM);
     }
-    if(pixelShaderUnified.isNull())
+    if(!pixelShaderUnified)
         {
         pixelShaderUnified = mgr.createProgram("imgui/FP",Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,"unified",GPT_FRAGMENT_PROGRAM);
     }
@@ -385,7 +386,7 @@ void ImguiManager::createMaterial()
     UnifiedHighLevelGpuProgram* vertexShaderPtr = static_cast<UnifiedHighLevelGpuProgram*>(vertexShaderUnified.get());
     UnifiedHighLevelGpuProgram* pixelShaderPtr = static_cast<UnifiedHighLevelGpuProgram*>(pixelShaderUnified.get());
 
-    if (vertexShaderD3D11.isNull())
+    if (!vertexShaderD3D11)
     {
         vertexShaderD3D11 = mgr.createProgram("imgui/VP/D3D11", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
                 "hlsl", Ogre::GPT_VERTEX_PROGRAM);
@@ -396,7 +397,7 @@ void ImguiManager::createMaterial()
 
         vertexShaderPtr->addDelegateProgram(vertexShaderD3D11->getName());
         }
-    if (pixelShaderD3D11.isNull())
+    if (!pixelShaderD3D11)
         {
         pixelShaderD3D11 = mgr.createProgram("imgui/FP/D3D11", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
                 "hlsl", Ogre::GPT_FRAGMENT_PROGRAM);
@@ -407,7 +408,7 @@ void ImguiManager::createMaterial()
 
         pixelShaderPtr->addDelegateProgram(pixelShaderD3D11->getName());
         }
-    if (vertexShaderD3D9.isNull())
+    if (!vertexShaderD3D9)
     {
         vertexShaderD3D9 = mgr.createProgram("imgui/VP/D3D9", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
             "hlsl", Ogre::GPT_VERTEX_PROGRAM);
@@ -418,7 +419,7 @@ void ImguiManager::createMaterial()
     
         vertexShaderPtr->addDelegateProgram(vertexShaderD3D9->getName());
     }
-    if (pixelShaderD3D9.isNull())
+    if (!pixelShaderD3D9)
     {
         pixelShaderD3D9 = mgr.createProgram("imgui/FP/D3D9", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
             "hlsl", Ogre::GPT_FRAGMENT_PROGRAM);
@@ -430,7 +431,7 @@ void ImguiManager::createMaterial()
         pixelShaderPtr->addDelegateProgram(pixelShaderD3D9->getName());
     }
 
-    if (vertexShaderGL.isNull())
+    if (!vertexShaderGL)
     {
         vertexShaderGL = mgr.createProgram("imgui/VP/GL150", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
                 "glsl", Ogre::GPT_VERTEX_PROGRAM);
@@ -438,7 +439,7 @@ void ImguiManager::createMaterial()
         vertexShaderGL->load();
         vertexShaderPtr->addDelegateProgram(vertexShaderGL->getName());
         }
-    if (pixelShaderGL.isNull())
+    if (!pixelShaderGL)
         {
         pixelShaderGL = mgr.createProgram("imgui/FP/GL150", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
                 "glsl", Ogre::GPT_FRAGMENT_PROGRAM);
@@ -475,7 +476,7 @@ void ImguiManager::createFontTexture()
 
     mFontTex = TextureManager::getSingleton().createManual("ImguiFontTex",Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,TEX_TYPE_2D,width,height,1,1,PF_BYTE_RGBA);
 
-    const PixelBox & lockBox = mFontTex->getBuffer()->lock(Image::Box(0, 0, width, height), HardwareBuffer::HBL_DISCARD);
+    const PixelBox & lockBox = mFontTex->getBuffer()->lock(Box(0, 0, width, height), HardwareBuffer::HBL_DISCARD);
 	size_t texDepth = PixelUtil::getNumElemBytes(lockBox.format);
 
     memcpy(lockBox.data,pixels, width*height*texDepth);
