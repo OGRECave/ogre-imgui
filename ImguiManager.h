@@ -14,6 +14,7 @@
 namespace Ogre
 {
     class SceneManager;
+    class TextureUnitState;
 
     class ImguiManager : public RenderQueueListener,public OIS::MouseListener,public OIS::KeyListener, public Singleton<ImguiManager>
     {
@@ -78,6 +79,7 @@ namespace Ogre
 
         SceneManager*				mSceneMgr;
         Pass*						mPass;
+        TextureUnitState*           mTexUnit;
         int                         mLastRenderedFrame;
 
         TexturePtr                  mFontTex;

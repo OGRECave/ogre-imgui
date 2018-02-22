@@ -16,6 +16,7 @@
 #include <OgreUnifiedHighLevelGpuProgram.h>
 #include <OgreRoot.h>
 #include <OgreTechnique.h>
+#include <OgreTextureUnitState.h>
 #include <OgreViewport.h>
 #include <OgreHardwarePixelBuffer.h>
 #include <OgreRenderTarget.h>
@@ -206,6 +207,20 @@ void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation
             scTop    = scTop    < 0 ? 0 : (scTop    > vpHeight ? vpHeight : scTop);
             scBottom = scBottom < 0 ? 0 : (scBottom > vpHeight ? vpHeight : scBottom);
 
+
+            if(drawCmd->TextureId != 0 )
+            {
+                Ogre::ResourceHandle handle = (Ogre::ResourceHandle)drawCmd->TextureId;
+                Ogre::TexturePtr tex = Ogre::TextureManager::getSingleton().getByHandle(handle).staticCast<Ogre::Texture>();
+                if(!tex.isNull())
+                {
+                    mTexUnit->setTexture(tex);
+                }
+            }
+            else
+            {
+                mTexUnit->setTexture(mFontTex);
+            }
             renderSys->setScissorTest(true, scLeft, scTop, scRight, scBottom);
 
             // Render!
@@ -442,9 +457,9 @@ void ImguiManager::createMaterial()
     mPass->setSeparateSceneBlendingOperation(Ogre::SBO_ADD,Ogre::SBO_ADD);
     mPass->setSeparateSceneBlending(Ogre::SBF_SOURCE_ALPHA,Ogre::SBF_ONE_MINUS_SOURCE_ALPHA,Ogre::SBF_ONE_MINUS_SOURCE_ALPHA,Ogre::SBF_ZERO);
         
-    Ogre::TextureUnitState* texUnit =  mPass->createTextureUnitState();
-    texUnit->setTexture(mFontTex);
-    texUnit->setTextureFiltering(Ogre::TFO_NONE);
+    mTexUnit =  mPass->createTextureUnitState();
+    mTexUnit->setTexture(mFontTex);
+    mTexUnit->setTextureFiltering(Ogre::TFO_NONE);
 }
 
 void ImguiManager::createFontTexture()
