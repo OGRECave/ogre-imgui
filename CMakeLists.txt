@@ -17,3 +17,6 @@ set(OGRE_IMGUI_SRCS ${CMAKE_SOURCE_DIR}/ImguiManager.cpp ${CMAKE_SOURCE_DIR}/Img
 
 include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/imgui/)
 add_library(OgreImgui ${IMGUI_SRCS} ${OGRE_IMGUI_SRCS})
+
+add_executable(Example Example.cpp ${CMAKE_SOURCE_DIR}/imgui/imgui_demo.cpp)
+target_link_libraries(Example OgreImgui ${OGRE_LIBRARIES})
