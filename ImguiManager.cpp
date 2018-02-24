@@ -187,7 +187,7 @@ void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation
     Ogre::RenderSystem* renderSys = Ogre::Root::getSingletonPtr()->getRenderSystem();
     Ogre::Viewport* vp = renderSys->_getViewport();
     
-    if ((vp == nullptr) || (!vp->getTarget()->isPrimary()) || mFrameEnded)
+    if (!vp || (!vp->getTarget()->isPrimary()) || mFrameEnded)
     {
         return;
     }
