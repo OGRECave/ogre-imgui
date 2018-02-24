@@ -17,7 +17,7 @@ namespace Ogre
 
     class ImguiManager : public RenderQueueListener,public OgreBites::InputListener, public Singleton<ImguiManager>
     {
-        public:
+    public:
         static void createSingleton();
 
         ImguiManager();
@@ -70,16 +70,16 @@ namespace Ogre
         */
         static ImguiManager* getSingletonPtr(void);
 
-        protected:
+    protected:
 
         void createFontTexture();
         void createMaterial();
 
         SceneManager*				mSceneMgr;
-        Pass*						mPass;
         TextureUnitState*           mTexUnit;
         int                         mLastRenderedFrame;
 
+        ImGUIRenderable             mRenderable;
         TexturePtr                  mFontTex;
 
         bool                        mFrameEnded;

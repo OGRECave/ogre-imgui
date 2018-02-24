@@ -206,13 +206,11 @@ void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation
     const float T = texelOffsetY;
     const float B = io.DisplaySize.y + texelOffsetY;
     
-    Ogre::Matrix4 projMatrix(       2.0f/(R-L),    0.0f,         0.0f,       (L+R)/(L-R),
+    mRenderable.mXform = Matrix4(   2.0f/(R-L),    0.0f,         0.0f,       (L+R)/(L-R),
                                     0.0f,         -2.0f/(B-T),   0.0f,       (T+B)/(B-T),
                                     0.0f,          0.0f,        -1.0f,       0.0f,
                                     0.0f,          0.0f,         0.0f,       1.0f);
     
-    mPass->getVertexProgramParameters()->setNamedConstant("ProjectionMatrix", projMatrix);
-
     // Instruct ImGui to Render() and process the resulting CmdList-s
     /// Adopted from https://bitbucket.org/ChaosCreator/imgui-ogre2.1-binding
     /// ... Commentary on OGRE forums: http://www.ogre3d.org/forums/viewtopic.php?f=5&t=89081#p531059
@@ -228,9 +226,8 @@ void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation
         for (int j = 0; j < draw_list->CmdBuffer.Size; ++j)
         {
             // Create a renderable and fill it's buffers
-            ImGUIRenderable renderable;
             const ImDrawCmd *drawCmd = &draw_list->CmdBuffer[j];
-            renderable.updateVertexData(draw_list->VtxBuffer.Data, &draw_list->IdxBuffer.Data[startIdx], draw_list->VtxBuffer.Size, drawCmd->ElemCount);
+            mRenderable.updateVertexData(draw_list->VtxBuffer.Data, &draw_list->IdxBuffer.Data[startIdx], draw_list->VtxBuffer.Size, drawCmd->ElemCount);
 
             // Set scissoring
             int scLeft   = static_cast<int>(drawCmd->ClipRect.x); // Obtain bounds
@@ -263,7 +260,8 @@ void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation
             renderSys->setScissorTest(true, scLeft, scTop, scRight, scBottom);
 
             // Render!
-            mSceneMgr->_injectRenderWithPass(mPass, &renderable, 0, false, NULL);
+            mSceneMgr->_injectRenderWithPass(mRenderable.mMaterial->getBestTechnique()->getPass(0),
+                                             &mRenderable, false);
 
             // Update counts
             startIdx += drawCmd->ElemCount;
@@ -274,7 +272,10 @@ void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation
 //-----------------------------------------------------------------------------------
 void ImguiManager::createMaterial()
 {
-    
+    mRenderable.mMaterial = MaterialManager::getSingleton().create(
+        "imgui/material", ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME);
+    Pass* mPass = mRenderable.mMaterial->getTechnique(0)->getPass(0);
+#ifndef OGRE_BUILD_COMPONENT_RTSHADERSYSTEM
     static const char* vertexShaderSrcD3D11 =
     {
     "cbuffer vertexBuffer : register(b0) \n"
@@ -484,14 +485,14 @@ void ImguiManager::createMaterial()
 
         pixelShaderPtr->addDelegateProgram(pixelShaderGL->getName());
         }
-   
-    Ogre::MaterialPtr imguiMaterial = Ogre::MaterialManager::getSingleton().create("imgui/material", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-    mPass = imguiMaterial->getTechnique(0)->getPass(0);
     mPass->setFragmentProgram("imgui/FP");
     mPass->setVertexProgram("imgui/VP");
+    mPass->getVertexProgramParameters()->setNamedAutoConstant("ProjectionMatrix", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
+#endif
     mPass->setCullingMode(CULL_NONE);
     mPass->setDepthFunction(Ogre::CMPF_ALWAYS_PASS);
     mPass->setLightingEnabled(false);
+    mPass->setVertexColourTracking(TVC_DIFFUSE);
     mPass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
     mPass->setSeparateSceneBlendingOperation(Ogre::SBO_ADD,Ogre::SBO_ADD);
     mPass->setSeparateSceneBlending(Ogre::SBF_SOURCE_ALPHA,Ogre::SBF_ONE_MINUS_SOURCE_ALPHA,Ogre::SBF_ONE_MINUS_SOURCE_ALPHA,Ogre::SBF_ZERO);
@@ -499,6 +500,8 @@ void ImguiManager::createMaterial()
     mTexUnit =  mPass->createTextureUnitState();
     mTexUnit->setTexture(mFontTex);
     mTexUnit->setTextureFiltering(Ogre::TFO_NONE);
+
+    mRenderable.mMaterial->load();
 }
 
 void ImguiManager::createFontTexture()

@@ -13,10 +13,7 @@ namespace Ogre
     class ImGUIRenderable : public Renderable
     {
     protected:
-
-        MaterialPtr mMaterial;
         RenderOperation mRenderOp;
-
         void initImGUIRenderable(void);
        
     public:
@@ -26,13 +23,13 @@ namespace Ogre
         void updateVertexData(const ImDrawVert* vtxBuf, const ImDrawIdx* idxBuf, unsigned int vtxCount, unsigned int idxCount);
         Real getSquaredViewDepth(const Camera* cam) const   { (void)cam; return 0; }
 
-        void setMaterial( const String& matName );
-		virtual void setMaterial(const MaterialPtr & material);
-        virtual const MaterialPtr& getMaterial(void) const;
-        virtual void getWorldTransforms( Matrix4* xform ) const;
-        virtual void getRenderOperation( RenderOperation& op );
+        virtual const MaterialPtr& getMaterial(void) const { return mMaterial; }
+        virtual void getWorldTransforms( Matrix4* xform ) const { *xform = mXform; }
+        virtual void getRenderOperation( RenderOperation& op ) { op = mRenderOp; }
         virtual const LightList& getLights(void) const;
 
+        MaterialPtr              mMaterial;
+        Matrix4                  mXform;
         int                      mVertexBufferSize;
         int                      mIndexBufferSize;
 

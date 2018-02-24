@@ -78,39 +78,12 @@ namespace Ogre
         decl->addElement(0,offset,Ogre::VET_FLOAT2,Ogre::VES_TEXTURE_COORDINATES,0);
         offset += VertexElement::getTypeSize( VET_FLOAT2 );
         decl->addElement(0,offset,Ogre::VET_COLOUR,Ogre::VES_DIFFUSE);
-
-        
-          // set basic white material
-        this->setMaterial( "imgui/material" );
     }
     //-----------------------------------------------------------------------------------
     ImGUIRenderable::~ImGUIRenderable()
     {
         OGRE_DELETE mRenderOp.vertexData;
         OGRE_DELETE mRenderOp.indexData;
-    }
-    //-----------------------------------------------------------------------------------
-    void ImGUIRenderable::setMaterial( const String& matName )
-    {
-        mMaterial = MaterialManager::getSingleton().getByName( matName );
-        if( !mMaterial )
-        {
-            OGRE_EXCEPT( Exception::ERR_ITEM_NOT_FOUND, "Could not find material " + matName,
-                        "ImGUIRenderable::setMaterial" );
-        }
-    
-        // Won't load twice anyway
-        mMaterial->load();
-    }
-	//-----------------------------------------------------------------------------------
-    void ImGUIRenderable::setMaterial(const MaterialPtr & material)
-    {
-        mMaterial = material;
-    }
-    //-----------------------------------------------------------------------------------
-    const MaterialPtr& ImGUIRenderable::getMaterial(void) const
-    {
-        return mMaterial;
     }
     //-----------------------------------------------------------------------------------
     void ImGUIRenderable::updateVertexData(const ImDrawVert* vtxBuf, const ImDrawIdx* idxBuf, unsigned int vtxCount, unsigned int idxCount)
@@ -146,16 +119,6 @@ namespace Ogre
 
         bind->getBuffer(0)->unlock();
         mRenderOp.indexData->indexBuffer->unlock();
-    }
-    //-----------------------------------------------------------------------------------
-    void ImGUIRenderable::getWorldTransforms( Matrix4* xform ) const
-    {
-        *xform = Ogre::Matrix4::IDENTITY;
-    }
-    //-----------------------------------------------------------------------------------
-    void ImGUIRenderable::getRenderOperation(RenderOperation& op)
-    {
-        op = mRenderOp;
     }
     //-----------------------------------------------------------------------------------
     const LightList& ImGUIRenderable::getLights(void) const
