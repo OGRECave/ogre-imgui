@@ -1,4 +1,8 @@
 #include <imgui.h>
+#ifdef USE_FREETYPE
+#include <imgui_freetype.h>
+#endif
+
 #include "ImguiRenderable.h"
 #include "ImguiManager.h"
 
@@ -508,6 +512,12 @@ void ImguiManager::createFontTexture()
 {
     // Build texture atlas
     ImGuiIO& io = ImGui::GetIO();
+    io.Fonts->AddFontDefault();
+    // io.Fonts->AddFontFromFileTTF("../imgui/misc/fonts/DroidSans.ttf", 13.0f);
+#ifdef USE_FREETYPE
+    ImGuiFreeType::BuildFontAtlas(io.Fonts, 0);
+#endif
+
     unsigned char* pixels;
     int width, height;
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
