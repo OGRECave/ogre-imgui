@@ -244,27 +244,28 @@ void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation
             scTop    = scTop    < 0 ? 0 : (scTop    > vpHeight ? vpHeight : scTop);
             scBottom = scBottom < 0 ? 0 : (scBottom > vpHeight ? vpHeight : scBottom);
 
-
-            if(drawCmd->TextureId != 0 )
+            Pass * pass = mRenderable.mMaterial->getBestTechnique()->getPass(0);
+            TextureUnitState * st = pass->getTextureUnitState(0);
+            if (drawCmd->TextureId != 0)
             {
                 Ogre::ResourceHandle handle = (Ogre::ResourceHandle)drawCmd->TextureId;
                 Ogre::TexturePtr tex = Ogre::static_pointer_cast<Ogre::Texture>(
                     Ogre::TextureManager::getSingleton().getByHandle(handle));
                 if (tex)
                 {
-                    mTexUnit->setTexture(tex);
-                    mTexUnit->setTextureFiltering(Ogre::TFO_TRILINEAR);
+                    st->setTexture(tex);
+                    st->setTextureFiltering(Ogre::TFO_TRILINEAR);
                 }
             }
             else
             {
-                mTexUnit->setTexture(mFontTex);
-                mTexUnit->setTextureFiltering(Ogre::TFO_NONE);
+                st->setTexture(mFontTex);
+                st->setTextureFiltering(Ogre::TFO_NONE);
             }
             renderSys->setScissorTest(true, scLeft, scTop, scRight, scBottom);
 
             // Render!
-            mSceneMgr->_injectRenderWithPass(mRenderable.mMaterial->getBestTechnique()->getPass(0),
+            mSceneMgr->_injectRenderWithPass(pass,
                                              &mRenderable, false);
 
             // Update counts
