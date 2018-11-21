@@ -105,7 +105,7 @@ bool ImguiManager::mouseWheelRolled(const OgreBites::MouseWheelEvent& arg)
 {
     ImGuiIO& io = ImGui::GetIO();
     io.MouseWheel = Ogre::Math::Sign(arg.y);
-    return true;
+    return io.WantCaptureMouse;
 }
 
 bool ImguiManager::mouseMoved( const OgreBites::MouseMotionEvent &arg )
@@ -116,7 +116,7 @@ bool ImguiManager::mouseMoved( const OgreBites::MouseMotionEvent &arg )
     io.MousePos.x = arg.x;
     io.MousePos.y = arg.y;
 
-    return true;
+    return io.WantCaptureMouse;
 }
 
 // map sdl2 mouse buttons to imgui
@@ -140,7 +140,7 @@ bool ImguiManager::mousePressed( const OgreBites::MouseButtonEvent &arg)
     {
         io.MouseDown[b] = true;
     }
-    return true;
+    return io.WantCaptureMouse;
 }
 bool ImguiManager::mouseReleased( const OgreBites::MouseButtonEvent &arg)
 {
@@ -150,7 +150,7 @@ bool ImguiManager::mouseReleased( const OgreBites::MouseButtonEvent &arg)
     {
         io.MouseDown[b] = false;
     }
-    return true;
+    return io.WantCaptureMouse;
 }
 bool ImguiManager::keyPressed( const OgreBites::KeyboardEvent &arg )
 {
@@ -169,7 +169,7 @@ bool ImguiManager::keyPressed( const OgreBites::KeyboardEvent &arg )
         io.AddInputCharacter((unsigned short)arg.keysym.sym);
     }
 
-    return true;
+    return io.WantCaptureKeyboard;
 }
 bool ImguiManager::keyReleased( const OgreBites::KeyboardEvent &arg )
 {
@@ -179,7 +179,7 @@ bool ImguiManager::keyReleased( const OgreBites::KeyboardEvent &arg )
 
     ImGuiIO& io = ImGui::GetIO();
     io.KeysDown[key] = false;
-    return true;
+    return io.WantCaptureKeyboard;
 }
 //-----------------------------------------------------------------------------------
 void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation,bool& repeatThisInvocation)
