@@ -21,6 +21,7 @@ if(FREETYPE_FOUND)
     list(APPEND IMGUI_SRCS ${CMAKE_SOURCE_DIR}/imgui/misc/freetype/imgui_freetype.cpp)
 endif()
 
+add_definitions(-DIMGUI_DISABLE_OBSOLETE_FUNCTIONS)
 include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/imgui/)
 add_library(OgreImgui ${IMGUI_SRCS} ${OGRE_IMGUI_SRCS})
 target_link_libraries(OgreImgui PUBLIC ${OGRE_LIBRARIES})

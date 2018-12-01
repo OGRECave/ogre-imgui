@@ -18,7 +18,7 @@ public:
             evt.timeSinceLastFrame,
             Ogre::Rect(0, 0, getRenderWindow()->getWidth(), getRenderWindow()->getHeight()));
 
-        ImGui::ShowTestWindow();
+        ImGui::ShowDemoWindow();
 
         return true;
     }
