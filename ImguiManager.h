@@ -7,6 +7,7 @@
 #include <OgreSingleton.h>
 #include <OgreTexture.h>
 #include <OgreInput.h>
+#include <OgreResourceGroupManager.h>
 
 #include "ImguiRenderable.h"
 
@@ -22,6 +23,10 @@ namespace Ogre
 
         ImguiManager();
         ~ImguiManager();
+
+        /// add font from ogre .fontdef file
+        /// must be called before init()
+        ImFont* addFont(const String& name, const String& group OGRE_RESOURCE_GROUP_INIT);
 
         virtual void init(Ogre::SceneManager* mgr);
 

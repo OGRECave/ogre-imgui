@@ -25,6 +25,10 @@
 #include <OgreHardwarePixelBuffer.h>
 #include <OgreRenderTarget.h>
 
+#ifdef OGRE_BUILD_COMPONENT_OVERLAY
+#include <OgreFontManager.h>
+#endif
+
 using namespace Ogre;
 
 
@@ -297,12 +301,30 @@ void ImguiManager::createMaterial()
     mRenderable.mMaterial->load();
 }
 
+ImFont* ImguiManager::addFont(const String& name, const String& group)
+{
+#ifdef OGRE_BUILD_COMPONENT_OVERLAY
+    FontPtr font = FontManager::getSingleton().getByName(name, group);
+    OgreAssert(font, "font does not exist");
+    OgreAssert(font->getType() == FT_TRUETYPE, "font must be of FT_TRUETYPE");
+    DataStreamPtr dataStreamPtr =
+        ResourceGroupManager::getSingleton().openResource(font->getSource(), font->getGroup());
+    MemoryDataStream ttfchunk(dataStreamPtr, false); // transfer ownership to imgui
+
+    ImGuiIO& io = ImGui::GetIO();
+    return io.Fonts->AddFontFromMemoryTTF(ttfchunk.getPtr(), ttfchunk.size(), font->getTrueTypeSize());
+#else
+    OGRE_EXCEPT(Exception::ERR_INVALID_CALL, "Ogre Overlay Component required");
+    return NULL;
+#endif
+}
+
 void ImguiManager::createFontTexture()
 {
     // Build texture atlas
     ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->AddFontDefault();
-    // io.Fonts->AddFontFromFileTTF("../imgui/misc/fonts/DroidSans.ttf", 13.0f);
+    if(io.Fonts->Fonts.empty())
+        io.Fonts->AddFontDefault();
 #ifdef USE_FREETYPE
     ImGuiFreeType::BuildFontAtlas(io.Fonts, 0);
 #endif
