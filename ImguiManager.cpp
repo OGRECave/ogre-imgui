@@ -314,13 +314,8 @@ void ImguiManager::createFontTexture()
     mFontTex = TextureManager::getSingleton().createManual(
         "ImguiFontTex", Ogre::ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME, TEX_TYPE_2D,
         width, height, 1, 1, PF_BYTE_RGBA);
-    const PixelBox & lockBox = mFontTex->getBuffer()->lock(Box(0, 0, width, height), HardwareBuffer::HBL_DISCARD);
-	size_t texDepth = PixelUtil::getNumElemBytes(lockBox.format);
 
-    memcpy(lockBox.data,pixels, width*height*texDepth);
-	mFontTex->getBuffer()->unlock();
-    
-    
+    mFontTex->getBuffer()->blitFromMemory(PixelBox(Box(0, 0, width, height), PF_BYTE_RGBA, pixels));    
 }
 void ImguiManager::newFrame(float deltaTime,const Ogre::Rect & windowRect)
 {
