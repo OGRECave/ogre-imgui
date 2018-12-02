@@ -23,6 +23,16 @@ public:
         return true;
     }
 
+#ifndef OGRE_BUILD_COMPONENT_RTSHADERSYSTEM
+    void locateResources()
+    {
+        OgreBites::ApplicationContext::locateResources();
+        // we have to manually specify the shaders
+        Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
+            "../resources", "FileSystem", Ogre::ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME);
+    }
+#endif
+
     void setup()
     {
         OgreBites::ApplicationContext::setup();

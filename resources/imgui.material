@@ -1,0 +1,55 @@
+vertex_program imgui/VP/HLSL hlsl
+{
+    source shader.hlsl
+    entry_point vert
+    target vs_2_0
+    enable_backwards_compatibility true
+}
+
+vertex_program imgui/VP/GLSL glsl
+{
+    source shader.vert
+}
+
+vertex_program imgui/VP unified
+{
+    delegate imgui/VP/HLSL
+    delegate imgui/VP/GLSL
+}
+
+fragment_program imgui/FP/HLSL hlsl
+{
+    source shader.hlsl
+    entry_point frag
+    target ps_2_0
+    enable_backwards_compatibility true
+}
+
+fragment_program imgui/FP/GLSL glsl
+{
+    source shader.frag
+}
+
+fragment_program imgui/FP unified
+{
+    delegate imgui/FP/HLSL
+    delegate imgui/FP/GLSL
+}
+
+material imgui/material
+{
+    technique
+    {
+        pass
+        {
+            vertex_program_ref imgui/VP
+            {
+                param_named_auto ProjectionMatrix worldviewproj_matrix
+            }
+            fragment_program_ref imgui/FP
+            {
+
+            }
+        }
+    }
+}
