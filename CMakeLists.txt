@@ -27,6 +27,7 @@ endif()
 add_definitions(-DIMGUI_DISABLE_OBSOLETE_FUNCTIONS)
 include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/imgui/)
 add_library(OgreImgui ${IMGUI_SRCS} ${OGRE_IMGUI_SRCS})
+set_property(TARGET OgreImgui PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(OgreImgui PUBLIC ${OGRE_LIBRARIES})
 
 if(FREETYPE_FOUND)
@@ -42,3 +43,9 @@ if(NOT FREETYPE_FOUND)
     set(FREETYPE_FOUND "FALSE")
 endif()
 message(STATUS "using freetype: ${FREETYPE_FOUND}")
+
+# Python Bindings
+option(BUILD_PYTHON "build python bindings" ON)
+if(BUILD_PYTHON)
+    add_subdirectory(python)
+endif()
