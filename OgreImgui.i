@@ -31,6 +31,8 @@
 %ignore ImGuiTextBuffer::appendfv;
 
 %apply bool* INOUT { bool* p_open };
+%apply float* INOUT { float* v };
+%apply int* INOUT { int* v };
 %include "imgui.h"
 
 #ifdef SWIGPYTHON
