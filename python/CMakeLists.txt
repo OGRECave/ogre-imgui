@@ -13,7 +13,12 @@ set(CMAKE_SWIG_FLAGS -w401,314 -builtin -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS)
 
 set_source_files_properties(${CMAKE_SOURCE_DIR}/OgreImgui.i PROPERTIES CPLUSPLUS ON)
 
-add_definitions(-Wno-cast-qual -Wno-shadow -Wno-maybe-uninitialized -Wno-unused-label -Wno-unused-but-set-variable -Wno-missing-declarations)
+if(MSVC)
+	add_definitions(/wd4101 /wd4102)
+else()
+    add_definitions(-Wno-cast-qual -Wno-shadow -Wno-maybe-uninitialized -Wno-unused-label -Wno-unused-but-set-variable -Wno-missing-declarations)
+endif()
+
 swig_add_module(OgreImgui python ${CMAKE_SOURCE_DIR}/OgreImgui.i ${CMAKE_SOURCE_DIR}/imgui/imgui_demo.cpp)
 swig_link_libraries(OgreImgui OgreImgui OgreMain OgreBites ${PYTHON_LIBRARIES})
 set_target_properties(${SWIG_MODULE_OgreImgui_REAL_NAME} PROPERTIES DEBUG_POSTFIX "")
