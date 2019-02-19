@@ -248,6 +248,10 @@ void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation
             scTop    = scTop    < 0 ? 0 : (scTop    > vpHeight ? vpHeight : scTop);
             scBottom = scBottom < 0 ? 0 : (scBottom > vpHeight ? vpHeight : scBottom);
 
+            if (mRenderable.mMaterial->getSupportedTechniques().empty())
+            {
+                mRenderable.mMaterial->load(); // Support for adding lights run time
+            }
             Pass * pass = mRenderable.mMaterial->getBestTechnique()->getPass(0);
             TextureUnitState * st = pass->getTextureUnitState(0);
             if (drawCmd->TextureId != 0)
