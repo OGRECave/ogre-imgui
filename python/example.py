@@ -1,13 +1,19 @@
 import Ogre
-import OgreRTShader
-import OgreBites
+if (Ogre.OGRE_VERSION_MAJOR, Ogre.OGRE_VERSION_MINOR) < (1, 12):
+    import OgreRTShader
+    import OgreOverlay
+    import OgreBites
+else:
+    import Ogre.RTShader as OgreRTShader
+    import Ogre.Overlay as OgreOverlay
+    import Ogre.Bites as OgreBites
 import OgreImgui
 
 
 class ImguiExample(OgreBites.ApplicationContext, OgreBites.InputListener):
 
     def __init__(self):
-        OgreBites.ApplicationContext.__init__(self, "OgreImguiExample", False)
+        OgreBites.ApplicationContext.__init__(self, "OgreImguiExample")
         OgreBites.InputListener.__init__(self)
 
     def keyPressed(self, evt):

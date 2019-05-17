@@ -34,11 +34,12 @@ endif()
 option(BUILD_EXAMPLE "build example app" ON)
 if(BUILD_EXAMPLE)
     # copy essential config files next to our binary where OGRE autodiscovers them
-    file(COPY ${OGRE_CONFIG_DIR}/plugins.cfg ${OGRE_CONFIG_DIR}/resources.cfg
-        DESTINATION ${CMAKE_BINARY_DIR})
+    file(COPY ${OGRE_CONFIG_DIR}/resources.cfg DESTINATION ${CMAKE_BINARY_DIR})
 
     add_executable(Example Example.cpp ${CMAKE_SOURCE_DIR}/imgui/imgui_demo.cpp)
     target_link_libraries(Example OgreImgui)
+
+    file(COPY ${OGRE_CONFIG_DIR}/resources.cfg DESTINATION ${CMAKE_SOURCE_DIR}/python/)
 endif()
 
 if(NOT FREETYPE_FOUND)

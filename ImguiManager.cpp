@@ -25,6 +25,10 @@
 #include <OgreHardwarePixelBuffer.h>
 #include <OgreRenderTarget.h>
 
+#if OGRE_VERSION >= 0x10C00
+#include "OgreComponents.h"
+#endif
+
 #ifdef OGRE_BUILD_COMPONENT_OVERLAY
 #include <OgreFontManager.h>
 #endif
@@ -298,7 +302,7 @@ void ImguiManager::createMaterial()
     mPass->setSeparateSceneBlendingOperation(Ogre::SBO_ADD,Ogre::SBO_ADD);
     mPass->setSeparateSceneBlending(Ogre::SBF_SOURCE_ALPHA,Ogre::SBF_ONE_MINUS_SOURCE_ALPHA,Ogre::SBF_ONE_MINUS_SOURCE_ALPHA,Ogre::SBF_ZERO);
         
-    mTexUnit =  mPass->createTextureUnitState();
+    TextureUnitState*  mTexUnit =  mPass->createTextureUnitState();
     mTexUnit->setTexture(mFontTex);
     mTexUnit->setTextureFiltering(Ogre::TFO_NONE);
 

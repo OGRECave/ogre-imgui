@@ -14,7 +14,6 @@
 namespace Ogre
 {
     class SceneManager;
-    class TextureUnitState;
 
     class ImguiManager : public RenderQueueListener,public OgreBites::InputListener, public Singleton<ImguiManager>
     {
@@ -81,7 +80,6 @@ namespace Ogre
         void createMaterial();
 
         SceneManager*				mSceneMgr;
-        TextureUnitState*           mTexUnit;
         int                         mLastRenderedFrame;
 
         ImGUIRenderable             mRenderable;

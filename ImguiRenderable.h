@@ -6,10 +6,8 @@
 #include "OgreRenderable.h"
 #include <OgreRenderOperation.h>
 
-struct ImDrawData;
 namespace Ogre 
 {
-    class SceneManager;
     class ImGUIRenderable : public Renderable
     {
     protected:
