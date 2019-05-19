@@ -40,9 +40,7 @@ THE SOFTWARE.
 
 namespace Ogre
 {
-    ImGUIRenderable::ImGUIRenderable():
-    mVertexBufferSize(5000)
-    ,mIndexBufferSize(10000)
+    ImGUIRenderable::ImGUIRenderable()
     {
         initImGUIRenderable();
 
@@ -86,39 +84,26 @@ namespace Ogre
         OGRE_DELETE mRenderOp.indexData;
     }
     //-----------------------------------------------------------------------------------
-    void ImGUIRenderable::updateVertexData(const ImDrawVert* vtxBuf, const ImDrawIdx* idxBuf, unsigned int vtxCount, unsigned int idxCount)
+    void ImGUIRenderable::updateVertexData(const ImVector<ImDrawVert>& vtxBuf, const ImVector<ImDrawIdx>& idxBuf)
     {
         Ogre::VertexBufferBinding* bind = mRenderOp.vertexData->vertexBufferBinding;
 
-        if (bind->getBindings().empty() || mVertexBufferSize != vtxCount)
+        if (bind->getBindings().empty() || bind->getBuffer(0)->getNumVertices() != vtxBuf.size())
         {
-	        mVertexBufferSize = vtxCount;
-
-	        bind->setBinding(0, Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(sizeof(ImDrawVert), mVertexBufferSize, Ogre::HardwareBuffer::HBU_WRITE_ONLY));
+	        bind->setBinding(0, HardwareBufferManager::getSingleton().createVertexBuffer(sizeof(ImDrawVert), vtxBuf.size(), HardwareBuffer::HBU_WRITE_ONLY));
         }
-        if (!mRenderOp.indexData->indexBuffer || mIndexBufferSize != idxCount)
+        if (!mRenderOp.indexData->indexBuffer || mRenderOp.indexData->indexBuffer->getNumIndexes() != idxBuf.size())
         {
-	        mIndexBufferSize = idxCount;
-            
 	        mRenderOp.indexData->indexBuffer =
-		        Ogre::HardwareBufferManager::getSingleton().createIndexBuffer(Ogre::HardwareIndexBuffer::IT_16BIT, mIndexBufferSize, Ogre::HardwareBuffer::HBU_WRITE_ONLY);
+		        HardwareBufferManager::getSingleton().createIndexBuffer(HardwareIndexBuffer::IT_16BIT, idxBuf.size(), HardwareBuffer::HBU_WRITE_ONLY);
         }
       
         // Copy all vertices
-        ImDrawVert* vtxDst = (ImDrawVert*)(bind->getBuffer(0)->lock(Ogre::HardwareBuffer::HBL_DISCARD));
-        ImDrawIdx* idxDst = (ImDrawIdx*)(mRenderOp.indexData->indexBuffer->lock(Ogre::HardwareBuffer::HBL_DISCARD));
-          
-        memcpy(vtxDst, vtxBuf, mVertexBufferSize * sizeof(ImDrawVert));
-        memcpy(idxDst, idxBuf, mIndexBufferSize * sizeof(ImDrawIdx));
-         
+        bind->getBuffer(0)->writeData(0, vtxBuf.size_in_bytes(), vtxBuf.Data, true);
+        mRenderOp.indexData->indexBuffer->writeData(0, idxBuf.size_in_bytes(), idxBuf.Data, true);
+
         mRenderOp.vertexData->vertexStart = 0;
-        mRenderOp.vertexData->vertexCount = vtxCount;
-        mRenderOp.indexData->indexStart = 0;
-        mRenderOp.indexData->indexCount = idxCount;
-
-
-        bind->getBuffer(0)->unlock();
-        mRenderOp.indexData->indexBuffer->unlock();
+        mRenderOp.vertexData->vertexCount = vtxBuf.size();
     }
     //-----------------------------------------------------------------------------------
     const LightList& ImGUIRenderable::getLights(void) const

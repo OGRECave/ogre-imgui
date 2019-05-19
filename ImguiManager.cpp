@@ -233,13 +233,14 @@ void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation
     for (int i = 0; i < draw_data->CmdListsCount; ++i)
     {
         const ImDrawList* draw_list = draw_data->CmdLists[i];
+        mRenderable.updateVertexData(draw_list->VtxBuffer, draw_list->IdxBuffer);
+
         unsigned int startIdx = 0;
 
         for (int j = 0; j < draw_list->CmdBuffer.Size; ++j)
         {
             // Create a renderable and fill it's buffers
             const ImDrawCmd *drawCmd = &draw_list->CmdBuffer[j];
-            mRenderable.updateVertexData(draw_list->VtxBuffer.Data, &draw_list->IdxBuffer.Data[startIdx], draw_list->VtxBuffer.Size, drawCmd->ElemCount);
 
             // Set scissoring
             int scLeft   = static_cast<int>(drawCmd->ClipRect.x); // Obtain bounds
@@ -277,6 +278,8 @@ void ImguiManager::renderQueueEnded(uint8 queueGroupId, const String& invocation
             renderSys->setScissorTest(true, scLeft, scTop, scRight, scBottom);
 
             // Render!
+            mRenderable.mRenderOp.indexData->indexStart = startIdx;
+            mRenderable.mRenderOp.indexData->indexCount = drawCmd->ElemCount;
             mSceneMgr->_injectRenderWithPass(pass,
                                              &mRenderable, false);
 
