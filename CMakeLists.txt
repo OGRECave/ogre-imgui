@@ -13,7 +13,7 @@ set(IMGUI_SRCS
     ${CMAKE_SOURCE_DIR}/imgui/imgui.cpp 
     ${CMAKE_SOURCE_DIR}/imgui/imgui_draw.cpp
     ${CMAKE_SOURCE_DIR}/imgui/imgui_widgets.cpp)
-set(OGRE_IMGUI_SRCS ${CMAKE_SOURCE_DIR}/ImguiManager.cpp ${CMAKE_SOURCE_DIR}/ImguiRenderable.cpp)
+set(OGRE_IMGUI_SRCS ${CMAKE_SOURCE_DIR}/ImguiManager.cpp)
 if(FREETYPE_FOUND)
     include_directories(${CMAKE_SOURCE_DIR}/imgui/misc/freetype/)
     list(APPEND IMGUI_SRCS ${CMAKE_SOURCE_DIR}/imgui/misc/freetype/imgui_freetype.cpp)

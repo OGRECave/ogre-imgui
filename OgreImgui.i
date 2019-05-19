@@ -6,7 +6,6 @@
 #include "OgreTrays.h"
 #include "OgreAdvancedRenderControls.h"
 #include "OgreCameraMan.h"
-#include "ImguiRenderable.h"
 #include "ImguiManager.h"
 %}
 
@@ -43,5 +42,4 @@
 #endif
 
 /// Ogre
-%include "ImguiRenderable.h"
 %include "ImguiManager.h"

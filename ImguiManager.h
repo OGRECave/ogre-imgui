@@ -1,15 +1,15 @@
 #pragma once
 
 #include <imgui.h>
-#include <OgreCommon.h>
+#include <OgrePrerequisites.h>
 
 #include <OgreRenderQueueListener.h>
 #include <OgreSingleton.h>
 #include <OgreTexture.h>
 #include <OgreInput.h>
 #include <OgreResourceGroupManager.h>
-
-#include "ImguiRenderable.h"
+#include <OgreRenderable.h>
+#include <OgreRenderOperation.h>
 
 namespace Ogre
 {
@@ -75,6 +75,29 @@ namespace Ogre
         static ImguiManager* getSingletonPtr(void);
 
     protected:
+
+        class ImGUIRenderable : public Renderable
+        {
+        protected:
+            void initImGUIRenderable(void);
+
+        public:
+            ImGUIRenderable();
+            ~ImGUIRenderable();
+
+            void updateVertexData(const ImVector<ImDrawVert>& vtxBuf, const ImVector<ImDrawIdx>& idxBuf);
+            Real getSquaredViewDepth(const Camera* cam) const   { (void)cam; return 0; }
+
+            virtual const MaterialPtr& getMaterial(void) const { return mMaterial; }
+            virtual void getWorldTransforms( Matrix4* xform ) const { *xform = mXform; }
+            virtual void getRenderOperation( RenderOperation& op ) { op = mRenderOp; }
+            virtual const LightList& getLights(void) const;
+
+            MaterialPtr              mMaterial;
+            Matrix4                  mXform;
+            RenderOperation          mRenderOp;
+
+        };
 
         void createFontTexture();
         void createMaterial();
