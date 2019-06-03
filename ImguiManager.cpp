@@ -58,7 +58,6 @@ ImguiManager& ImguiManager::getSingleton(void)
 
 ImguiManager::ImguiManager()
 :mSceneMgr(0)
-,mLastRenderedFrame(-1)
 {
     ImGui::CreateContext();
 }
@@ -354,7 +353,7 @@ void ImguiManager::newFrame(float deltaTime,const Ogre::Rect & windowRect)
 {
     mFrameEnded=false;
     ImGuiIO& io = ImGui::GetIO();
-    io.DeltaTime = deltaTime;
+    io.DeltaTime = std::max(deltaTime, 1e-4f); // see https://github.com/ocornut/imgui/commit/3c07ec6a6126fb6b98523a9685d1f0f78ca3c40c
 
      // Read keyboard modifiers inputs
     io.KeyAlt = false;// mKeyInput->isKeyDown(OIS::KC_LMENU);

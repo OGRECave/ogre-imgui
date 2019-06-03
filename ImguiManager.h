@@ -103,7 +103,6 @@ namespace Ogre
         void createMaterial();
 
         SceneManager*				mSceneMgr;
-        int                         mLastRenderedFrame;
 
         ImGUIRenderable             mRenderable;
         TexturePtr                  mFontTex;
