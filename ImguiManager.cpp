@@ -165,26 +165,38 @@ bool ImguiManager::keyPressed( const OgreBites::KeyboardEvent &arg )
 
     ImGuiIO& io = ImGui::GetIO();
     
+    // ignore
+    if(arg.keysym.sym == SDLK_LSHIFT) return io.WantCaptureKeyboard;
+
     io.KeyCtrl = arg.keysym.mod & KMOD_CTRL;
-    io.KeyShift = arg.keysym.sym == SDLK_LSHIFT;
+    io.KeyShift = arg.keysym.mod & SDLK_LSHIFT;
 
     int key = kc2sc(arg.keysym.sym);
 
     if(key > 0 && key < 512)
     {
         io.KeysDown[key] = true;
-        io.AddInputCharacter((unsigned short)arg.keysym.sym);
+        
+        uint16_t sym = arg.keysym.sym;
+        if (io.KeyShift) sym -= 32;
+        io.AddInputCharacter(sym);
     }
 
     return io.WantCaptureKeyboard;
 }
 bool ImguiManager::keyReleased( const OgreBites::KeyboardEvent &arg )
 {
+    using namespace OgreBites;
+
     int key = kc2sc(arg.keysym.sym);
     if(key < 0 || key >= 512)
         return true;
 
     ImGuiIO& io = ImGui::GetIO();
+
+    io.KeyCtrl = arg.keysym.mod & KMOD_CTRL;
+    io.KeyShift = arg.keysym.mod & SDLK_LSHIFT;
+
     io.KeysDown[key] = false;
     return io.WantCaptureKeyboard;
 }
