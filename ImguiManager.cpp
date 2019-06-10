@@ -321,8 +321,28 @@ ImFont* ImguiManager::addFont(const String& name, const String& group)
         ResourceGroupManager::getSingleton().openResource(font->getSource(), font->getGroup());
     MemoryDataStream ttfchunk(dataStreamPtr, false); // transfer ownership to imgui
 
+    // convert codepoint ranges for imgui
+    CodePointRange cprange;
+    for(const auto& r : font->getCodePointRangeList())
+    {
+        cprange.push_back(r.first);
+        cprange.push_back(r.second);
+    }
+
     ImGuiIO& io = ImGui::GetIO();
-    return io.Fonts->AddFontFromMemoryTTF(ttfchunk.getPtr(), ttfchunk.size(), font->getTrueTypeSize());
+    const ImWchar* cprangePtr = io.Fonts->GetGlyphRangesDefault();
+    if(!cprange.empty())
+    {
+        cprange.push_back(0); // terminate
+        mCodePointRanges.push_back(cprange);
+        // ptr must persist until createFontTexture
+        cprangePtr = mCodePointRanges.back().data();
+    }
+
+    ImFontConfig cfg;
+    strncpy(cfg.Name, name.c_str(), 40);
+    return io.Fonts->AddFontFromMemoryTTF(ttfchunk.getPtr(), ttfchunk.size(),
+                                          font->getTrueTypeSize(), &cfg, cprangePtr);
 #else
     OGRE_EXCEPT(Exception::ERR_INVALID_CALL, "Ogre Overlay Component required");
     return NULL;
@@ -347,7 +367,9 @@ void ImguiManager::createFontTexture()
         "ImguiFontTex", Ogre::ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME, TEX_TYPE_2D,
         width, height, 1, 1, PF_BYTE_RGBA);
 
-    mFontTex->getBuffer()->blitFromMemory(PixelBox(Box(0, 0, width, height), PF_BYTE_RGBA, pixels));    
+    mFontTex->getBuffer()->blitFromMemory(PixelBox(Box(0, 0, width, height), PF_BYTE_RGBA, pixels));
+
+    mCodePointRanges.clear(); 
 }
 void ImguiManager::newFrame(float deltaTime,const Ogre::Rect & windowRect)
 {

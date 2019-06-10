@@ -108,5 +108,8 @@ namespace Ogre
         TexturePtr                  mFontTex;
 
         bool                        mFrameEnded;
+
+        typedef std::vector<ImWchar> CodePointRange;
+        std::vector<CodePointRange> mCodePointRanges;
     };
 }
