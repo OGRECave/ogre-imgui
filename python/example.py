@@ -42,7 +42,7 @@ class ImguiExample(OgreBites.ApplicationContext, OgreBites.InputListener):
         root = self.getRoot()
         scn_mgr = root.createSceneManager()
         OgreImgui.ImguiManager.getSingleton().init(scn_mgr)
-        self.addInputListener(OgreImgui.ImguiManager.getSingleton())
+        self.addInputListener(OgreImgui.ImguiManager.getSingleton().getInputListener())
 
         shadergen = OgreRTShader.ShaderGenerator.getSingleton()
         shadergen.addSceneManager(scn_mgr)  # must be done before we do anything with the scene

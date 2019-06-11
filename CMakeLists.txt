@@ -25,6 +25,10 @@ add_library(OgreImgui ${IMGUI_SRCS} ${OGRE_IMGUI_SRCS})
 set_property(TARGET OgreImgui PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(OgreImgui PUBLIC ${OGRE_LIBRARIES})
 
+if(OGRE_Bites_FOUND)
+    target_compile_definitions(OgreImgui PRIVATE -DHAVE_OGRE_BITES)
+endif()
+
 if(FREETYPE_FOUND)
     target_compile_definitions(OgreImgui PRIVATE -DUSE_FREETYPE)
     target_include_directories(OgreImgui PRIVATE ${FREETYPE_INCLUDE_DIRS})

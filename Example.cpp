@@ -39,7 +39,7 @@ public:
         addInputListener(this);
 
         Ogre::ImguiManager::createSingleton();
-        addInputListener(Ogre::ImguiManager::getSingletonPtr());
+        addInputListener(Ogre::ImguiManager::getSingletonPtr()->getInputListener());
 
         // get a pointer to the already created root
         Ogre::Root* root = getRoot();
