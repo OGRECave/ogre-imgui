@@ -36,6 +36,8 @@ Render systems supported are:
 
 * D3D9
 * D3D11
+* GL
+* GLES2
 * GL3+
 
 ## Usage ##
